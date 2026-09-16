@@ -1,0 +1,64 @@
+# --- secrets: the important part ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.supabase/
+secrets.json
+service-account*.json
+
+# --- dependencies ---
+node_modules/
+.pnp
+.pnp.js
+
+# --- build output ---
+dist/
+dist-ssr/
+build/
+.netlify/
+.vercel/
+*.local
+
+# --- caches and logs ---
+.cache/
+.parcel-cache/
+.vite/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# --- editors and OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# --- python, if any tooling sits alongside ---
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Android TWA signing and build
+android.keystore
+*.keystore
+*.jks
+gradle.properties
+.gradle/
+build/
+manifest-checksum.txt
+
+# Supabase CLI state
+supabase/.temp/
+.temp/
+
+# Old drafts
+_drafts/

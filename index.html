@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WaitWell — by Damon Dynamics</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1a6b4a;--green-light:#e8f5ee;--green-mid:#9FE1CB;--green-dark:#085041;
+  --amber-light:#fef8ee;--amber-mid:#FAC775;--amber-dark:#412402;
+  --blue-light:#eaf1fb;--blue:#2c5fa8;--purple-light:#f0ecfa;--purple:#6a4ca8;
+  --red-light:#fdecec;--red:#c0392b;
+  --text:#1a1a1a;--text-sub:#555;--text-hint:#888;
+  --bg:#f7f8f6;--card:#fff;--border:#e0e0da;--shell:#d8dcd6;
+  --radius:14px;--radius-sm:8px;--radius-pill:100px
+}
+html[data-theme="dark"]{
+  --green:#1f8a60;--green-light:#16302a;--green-mid:#2f6450;--green-dark:#7fe3c0;
+  --amber-light:#332a18;--amber-mid:#6b5424;--amber-dark:#f4c775;
+  --blue-light:#18283d;--blue:#7aa8e8;--purple-light:#241f33;--purple:#b49ae8;
+  --red-light:#3a1f1f;--red:#e88a82;
+  --text:#eef1ee;--text-sub:#a8aeac;--text-hint:#787e7c;
+  --bg:#14171a;--card:#1e2226;--border:#31363a;--shell:#0a0c0d
+}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);margin:0;transition:background .3s}
+.phone{width:100%;height:100dvh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;position:relative;transition:background .3s;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+@media (min-width:500px){
+  body{background:var(--shell);display:flex;align-items:center;justify-content:center;padding:12px}
+  .phone{max-width:400px;height:min(844px,95vh);border-radius:24px;box-shadow:0 8px 44px rgba(0,0,0,0.22)}
+}
+#splash{position:absolute;inset:0;z-index:100;background:radial-gradient(circle at 50% 35%,#1a3a30 0%,#0c1714 70%,#070d0b 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .6s}
+#splash.fade{opacity:0;pointer-events:none}
+.dd-lockup{display:flex;flex-direction:column;align-items:center;animation:ddIn 1s ease both}
+.dd-mark{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#34d399,#1a6b4a);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(52,211,153,0.35);margin-bottom:18px}
+.dd-mark span{font-size:30px;font-weight:800;color:#fff;letter-spacing:-1px}
+.dd-name{font-size:13px;font-weight:600;letter-spacing:5px;color:#7fe3c0;text-transform:uppercase}
+.dd-presents{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-top:6px}
+.dd-app{margin-top:34px;display:flex;align-items:center;gap:9px;opacity:0;animation:ddApp .8s ease .9s both}
+.dd-app .am{width:40px;height:40px;background:#ffffff;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(0,0,0,0.28)}
+.dd-app .an{font-size:22px;font-weight:600;color:#fff;letter-spacing:-0.3px}
+.dd-slogan{margin-top:16px;font-size:12px;letter-spacing:1.5px;color:rgba(255,255,255,0.72);font-style:italic;opacity:0;animation:ddApp .8s ease 1.3s both}
+.dd-tap{position:absolute;bottom:34px;font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:1px}
+@keyframes ddIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes ddApp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.auth-wrap{flex:1;overflow-y:auto;padding:34px 22px;display:flex;flex-direction:column}
+.auth-logo{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.auth-logo .mark{width:36px;height:36px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.auth-logo span{font-size:20px;font-weight:600}
+.auth-tag{font-size:14px;color:var(--text);font-weight:500;margin-bottom:3px}
+.auth-by{font-size:11px;color:var(--text-hint);margin-bottom:28px;letter-spacing:0.2px}
+.auth-toggle{display:flex;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;margin-bottom:18px}
+.auth-toggle button{flex:1;padding:9px;border:none;background:none;font-size:13px;font-weight:600;color:var(--text-sub);border-radius:6px;cursor:pointer;transition:all .15s}
+.auth-toggle button.active{background:var(--green);color:#fff}
+.field-label{font-size:12px;color:var(--text-sub);margin-bottom:5px;display:block}
+.auth-err{font-size:12px;color:var(--red);margin:-2px 0 10px;min-height:15px}
+.auth-note{font-size:11px;color:var(--text-hint);text-align:center;margin-top:16px;line-height:1.5}
+.app-header{background:var(--green);color:#fff;padding:13px 16px;flex-shrink:0}
+.h-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.h-top h1{font-size:18px;font-weight:600;letter-spacing:-0.3px}
+.h-icons{display:flex;gap:6px;flex-shrink:0}
+.h-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);border:none;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.h-btn:hover{background:rgba(255,255,255,0.3)}
+.h-sub{font-size:12px;opacity:0.88;margin-top:2px}
+.h-badge{display:inline-block;background:rgba(255,255,255,0.22);border-radius:20px;padding:1px 9px;font-size:11px;margin-left:6px}
+.screen{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px;display:none;flex-direction:column;gap:12px}
+.screen.active{display:flex;animation:screenIn .22s ease}
+@keyframes screenIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.screen::-webkit-scrollbar,.auth-wrap::-webkit-scrollbar,.m-body::-webkit-scrollbar{width:0}
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px}
+.card-title{font-size:12px;font-weight:600;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px}
+.section-label{font-size:12px;font-weight:600;color:var(--text-sub);padding:0 2px;margin-top:2px}
+.input-field{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--card);color:var(--text);outline:none;margin-bottom:10px;transition:border .15s}
+.input-field:focus{border-color:var(--green)}
+.input-field::placeholder{color:var(--text-hint)}
+.today-step{background:var(--green-light);border-radius:var(--radius);border:1px solid var(--green-mid);padding:14px}
+.today-step .lbl{font-size:11px;font-weight:600;color:var(--green-dark);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+.today-step .task{font-size:15px;font-weight:600;color:var(--green-dark)}
+.today-step .sub{font-size:12px;color:var(--green-dark);opacity:0.85;margin-top:3px}
+.snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.snap-item{background:var(--bg);border-radius:var(--radius-sm);padding:10px 4px;text-align:center;border:1px solid var(--border)}
+.snap-item .emoji{font-size:16px}
+.snap-item .val{font-size:17px;font-weight:700;color:var(--text);margin-top:1px}
+.snap-item .lbl{font-size:10px;color:var(--text-hint);margin-top:1px}
+.appt-card{background:var(--amber-light);border-radius:var(--radius);border:1px solid var(--amber-mid);padding:14px;display:flex;align-items:center;gap:12px}
+.appt-icon{width:40px;height:40px;border-radius:10px;background:var(--amber-mid);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.appt-title{font-size:14px;font-weight:600;color:var(--amber-dark)}
+.appt-sub{font-size:12px;color:var(--amber-dark);opacity:0.85;margin-top:2px}
+.btn{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.btn:hover:not(:disabled){opacity:0.9}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn-outline{background:var(--card);color:var(--green);border:1.5px solid var(--green)}
+.btn-ghost{background:none;color:var(--text-hint);font-size:13px;border:none;cursor:pointer;padding:8px}
+.ob-progress{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:18px}
+.ob-fill{height:100%;background:var(--green);transition:width .4s}
+h2{font-size:20px;font-weight:600;line-height:1.3;margin-bottom:6px}
+.lead{font-size:14px;color:var(--text-sub);margin-bottom:18px;line-height:1.5}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.cond-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 11px;cursor:pointer;transition:all .15s;background:var(--card)}
+.cond-card.active{border-color:var(--green);background:var(--green-light)}
+.cond-icon{font-size:24px;margin-bottom:5px}
+.cond-name{font-size:13px;font-weight:600}
+.cond-desc{font-size:11px;color:var(--text-hint);margin-top:2px;line-height:1.35}
+.wait-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.pill-opt{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 8px;text-align:center;font-size:13px;font-weight:500;color:var(--text-sub);cursor:pointer;background:var(--card);transition:all .15s}
+.pill-opt.active{border-color:var(--green);background:var(--green-light);color:var(--green-dark);font-weight:600}
+.tag-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.tag{padding:7px 12px;border-radius:var(--radius-pill);font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--text-sub);transition:all .15s}
+.tag.active{border-color:var(--green);background:var(--green-light);color:var(--green-dark);font-weight:500}
+input[type=range]{width:100%;-webkit-appearance:none;height:5px;border-radius:3px;outline:none;background:var(--border)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);border:2px solid var(--card);box-shadow:0 1px 4px rgba(0,0,0,0.25);cursor:pointer}
+.slider-row{margin-bottom:16px}
+.slider-row label{display:flex;justify-content:space-between;font-size:13px;color:var(--text-sub);margin-bottom:7px}
+.slider-row label strong{color:var(--text);font-weight:600}
+.sev-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text-hint);margin-top:4px}
+.success-icon{width:60px;height:60px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;margin:0 auto 14px}
+.summary-card{background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--radius);padding:14px;margin-bottom:16px}
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--green-mid);font-size:13px}
+.summary-row:last-child{border-bottom:none}
+.summary-row .sl{color:var(--green-dark);opacity:0.75}
+.summary-row .sv{font-weight:600;color:var(--green-dark);text-align:right;max-width:60%}
+.week-nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.week-nav::-webkit-scrollbar{height:0}
+.day-pill{flex-shrink:0;border:1.5px solid var(--border);border-radius:var(--radius-pill);padding:7px 13px;font-size:13px;cursor:pointer;background:var(--card);color:var(--text-sub);font-weight:500;text-align:center}
+.day-pill.active{border-color:var(--green);background:var(--green);color:#fff}
+.day-pill .n{font-size:9px;display:block;opacity:0.7}
+.task{display:flex;gap:11px;padding:12px;border-radius:var(--radius);margin-bottom:8px;border:1px solid var(--border);background:var(--card);align-items:flex-start}
+.task-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.t-move{background:var(--green-light)}.t-rest{background:var(--blue-light)}.t-mind{background:var(--purple-light)}.t-log{background:var(--amber-light)}.t-prep{background:var(--border)}
+.task-body{flex:1}
+.task-cat{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px}
+.cat-move{color:var(--green-dark)}.cat-rest{color:var(--blue)}.cat-mind{color:var(--purple)}.cat-log{color:var(--amber-dark)}.cat-prep{color:var(--text-sub)}
+.task-title{font-size:14px;font-weight:600;line-height:1.35}
+.task-detail{font-size:12px;color:var(--text-sub);margin-top:3px;line-height:1.45}
+.task-meta{font-size:11px;color:var(--text-hint);margin-top:4px}
+.check{width:21px;height:21px;border-radius:50%;border:2px solid var(--green);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:5px}
+.check.done{background:var(--green)}.check.done::after{content:'✓';color:#fff;font-size:11px}
+.task.done{opacity:0.55}.task.done .task-title{text-decoration:line-through}
+.chart{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:10px;padding-top:18px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;position:relative}
+.bar{width:78%;border-radius:5px 5px 0 0;min-height:4px;transition:height .35s ease;position:relative}
+.bar-val{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:var(--text)}
+.bar-empty{width:78%;height:4px;border-radius:3px;background:var(--border)}
+.bar-lbl{font-size:10px;color:var(--text-hint)}
+.bar-today .bar-lbl{color:var(--green);font-weight:700}
+.metric-tabs{display:flex;gap:6px;margin-bottom:4px}
+.metric-tab{flex:1;padding:7px 4px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card);color:var(--text-sub);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s}
+.metric-tab.active{border-color:var(--green);background:var(--green-light);color:var(--green-dark)}
+.trend-line{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.trend-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px}
+.trend-up{background:var(--red-light);color:var(--red)}
+.trend-down{background:var(--green-light);color:var(--green-dark)}
+.trend-flat{background:var(--border);color:var(--text-sub)}
+.legend{display:flex;gap:12px;justify-content:center;margin-top:8px;font-size:10px;color:var(--text-hint)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.empty-note{font-size:12px;color:var(--text-hint);text-align:center;padding:18px 8px;line-height:1.5}
+.prep-item{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.prep-item:last-child{border-bottom:none}
+.prep-text{font-size:13px;line-height:1.45;flex:1}
+.prep-add{display:flex;gap:8px;margin-top:10px}
+.prep-add input{flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none;background:var(--card);color:var(--text)}
+.prep-add input:focus{border-color:var(--green)}
+.prep-add button{padding:9px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;flex-shrink:0}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.badge-free{background:var(--amber-light);border:1px solid var(--amber-mid);color:var(--amber-dark)}
+.badge-pro{background:var(--green-light);border:1px solid var(--green-mid);color:var(--green-dark)}
+.context-bar{background:var(--green-light);padding:7px 12px;font-size:11px;color:var(--green-dark);border-radius:var(--radius-sm);border:1px solid var(--green-mid);margin-bottom:4px;line-height:1.4}
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;font-size:13px;line-height:1.55;padding:10px 13px;border-radius:var(--radius)}
+.msg.ai{align-self:flex-start;background:var(--card);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.user{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:4px}
+.msg.ai strong{color:var(--green-dark)}
+.msg.ai ol{margin:7px 0 2px;padding-left:19px}.msg.ai li{margin-bottom:5px}
+.msg.crisis{align-self:stretch;max-width:100%;background:var(--red-light);border:1px solid var(--red)}
+.msg.crisis .ch{color:var(--red);font-weight:600;font-size:13px;margin-bottom:6px}
+.msg.crisis a{color:var(--red);font-weight:600}
+.typing{align-self:flex-start;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:11px 15px;display:flex;gap:4px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green-mid);animation:b 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes b{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.paywall{background:var(--amber-light);border:1px solid var(--amber-mid);border-radius:var(--radius);padding:14px;text-align:center}
+.paywall h3{font-size:14px;color:var(--amber-dark);margin-bottom:4px}
+.paywall p{font-size:12px;color:var(--amber-dark);opacity:.9;margin-bottom:10px}
+.paywall button{background:var(--green);color:#fff;border:none;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer}
+.coach-input{display:flex;gap:8px;align-items:flex-end;margin-top:4px}
+.coach-input textarea{flex:1;border:1.5px solid var(--border);border-radius:18px;padding:9px 13px;font-size:13px;font-family:inherit;resize:none;outline:none;max-height:80px;line-height:1.4;background:var(--card);color:var(--text)}
+.coach-input textarea:focus{border-color:var(--green)}
+.coach-send{width:40px;height:40px;border-radius:50%;background:var(--green);border:none;color:#fff;font-size:17px;cursor:pointer;flex-shrink:0}
+.coach-send:disabled{opacity:.4}
+.region-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.nhs-link{display:flex;align-items:center;gap:10px;padding:11px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card);margin-bottom:8px;cursor:pointer}
+.nhs-ico{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:10px;font-weight:700}
+.nhs-text{font-size:13px;font-weight:600}.nhs-sub{font-size:11px;color:var(--text-hint)}
+.disclaimer{font-size:11px;color:var(--text-hint);padding:11px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.5}
+.nav{display:flex;background:var(--card);border-top:1px solid var(--border);padding:6px 2px 4px;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;cursor:pointer}
+.nav-item .ni{font-size:19px;filter:grayscale(1);opacity:0.5}
+.nav-item span{font-size:9px;color:var(--text-hint)}
+.nav-item.active .ni{filter:none;opacity:1}
+.nav-item.active span{color:var(--green);font-weight:600}
+#manage{position:absolute;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s ease}
+#manage.open{transform:none}
+.mh{background:var(--green);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.mh button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.mh h1{font-size:17px;font-weight:600}
+.m-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.m-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.m-row:last-child{border-bottom:none}
+.m-row .mk{font-size:13px;color:var(--text-sub)}
+.m-row .mv{font-size:13px;font-weight:600}
+.switch{width:46px;height:26px;border-radius:14px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.switch.on{background:var(--green)}
+.switch::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.switch.on::after{left:23px}
+.m-danger{color:var(--red)!important}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;z-index:80}
+.modal{background:var(--card);width:100%;max-width:400px;border-radius:18px 18px 0 0;max-height:92%;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.stripe-bar{background:#635bff;color:#fff;font-size:11px;font-weight:600;text-align:center;padding:6px;letter-spacing:0.03em}
+.modal-body{padding:18px}
+.merchant{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.merchant .m-ico{width:38px;height:38px;background:var(--green);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+.merchant .m-name{font-size:14px;font-weight:600}.merchant .m-sub{font-size:12px;color:var(--text-hint)}
+.plan-pick{display:flex;gap:8px;margin-bottom:16px}
+.plan-opt{flex:1;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 8px;cursor:pointer;text-align:center}
+.plan-opt.active{border-color:#635bff;background:rgba(99,91,255,0.08)}
+.plan-opt .pp{font-size:16px;font-weight:700}.plan-opt .pl{font-size:11px;color:var(--text-hint)}
+.plan-opt .save{font-size:10px;color:var(--green-dark);font-weight:600;margin-top:2px}
+.field{margin-bottom:11px}
+.field label{font-size:12px;color:var(--text-sub);display:block;margin-bottom:4px}
+.field input{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;outline:none;background:var(--card);color:var(--text)}
+.field input:focus{border-color:#635bff}
+.field-row{display:flex;gap:10px}.field-row .field{flex:1}
+.pay-btn{width:100%;padding:13px;background:#635bff;color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;margin-top:6px}
+.pay-btn:disabled{opacity:0.6}
+.test-hint{font-size:11px;color:var(--text-sub);background:rgba(99,91,255,0.08);border:1px solid rgba(99,91,255,0.25);border-radius:8px;padding:9px;margin-bottom:14px;line-height:1.5}
+.modal-err{font-size:12px;color:var(--red);min-height:15px;margin:4px 0}
+.modal-close{background:none;border:none;color:var(--text-hint);font-size:13px;cursor:pointer;width:100%;padding:10px;margin-top:4px}
+.powered{font-size:10px;color:var(--text-hint);text-align:center;margin-top:10px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div id="splash">
+    <div class="dd-lockup"><div class="dd-mark"><span>DD</span></div><div class="dd-name">Damon Dynamics</div><div class="dd-presents">presents</div></div>
+    <div class="dd-app"><div class="am" id="splashLogo"></div><div class="an">WaitWell</div></div>
+    <div class="dd-slogan">Wait while we care for you</div>
+    <div class="dd-tap">tap to continue</div>
+  </div>
+  <div id="auth" class="auth-wrap hide">
+    <div class="auth-logo"><div class="mark" id="authLogo"></div><span>WaitWell</span></div>
+    <div class="auth-tag">Wait while we care for you</div>
+    <div class="auth-by">A Damon Dynamics app · NHS waiting-list support</div>
+    <div class="auth-toggle"><button id="tabLogin" class="active">Log in</button><button id="tabSignup">Sign up</button></div>
+    <div id="authForm"></div>
+    <p class="auth-note">Your data is saved securely to your account and syncs across your devices.</p>
+  </div>
+  <div id="onboarding" class="hide" style="flex:1;overflow-y:auto;padding:22px 18px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><div id="obLogo" style="width:30px;height:30px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center"></div><span style="font-size:17px;font-weight:600">WaitWell</span></div>
+    <div class="ob-progress"><div class="ob-fill" id="obFill" style="width:20%"></div></div>
+    <div id="obBody"></div>
+  </div>
+  <div id="app" class="hide" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div class="app-header" id="appHeader"></div>
+    <div class="screen" id="s-home"></div>
+    <div class="screen" id="s-tracker"></div>
+    <div class="screen" id="s-plan"></div>
+    <div class="screen" id="s-prep"></div>
+    <div class="screen" id="s-coach"></div>
+    <div class="screen" id="s-nhs"></div>
+    <nav class="nav">
+      <div class="nav-item active" data-s="home"><div class="ni">🏠</div><span>Home</span></div>
+      <div class="nav-item" data-s="tracker"><div class="ni">📈</div><span>Tracker</span></div>
+      <div class="nav-item" data-s="plan"><div class="ni">📅</div><span>Plan</span></div>
+      <div class="nav-item" data-s="prep"><div class="ni">📋</div><span>Prep</span></div>
+      <div class="nav-item" data-s="coach"><div class="ni">💬</div><span>Coach</span></div>
+      <div class="nav-item" data-s="nhs"><div class="ni">➕</div><span>NHS</span></div>
+    </nav>
+  </div>
+  <div id="manage"><div class="mh"><button id="manageBack">←</button><h1>Manage account</h1></div><div class="m-body" id="manageBody"></div></div>
+</div>
+
+<!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- jsPDF for report export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+/* ============================================================
+   STEP 1: PASTE YOUR NEW ANON KEY BELOW (the one you rotate in
+   Supabase → Project Settings → API). The URL is already set.
+   ============================================================ */
+const SUPABASE_URL = "https://zrhfbynyjvguwzitijdb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyaGZieW55anZndXd6aXRpamRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDg1OTEsImV4cCI6MjA5NjkyNDU5MX0.dJvG8s-v6VCO5lusAYqftccS7dZ3McLUHmxl6ZNmeWs";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+async function uid(){const r=await sb.auth.getUser();return r.data.user?r.data.user.id:null;}
+
+const db = {
+  signUp:(email,password)=>sb.auth.signUp({email,password}),
+  signIn:(email,password)=>sb.auth.signInWithPassword({email,password}),
+  signOutUser:()=>sb.auth.signOut(),
+  currentUser:async()=>(await sb.auth.getUser()).data.user,
+  saveProfile:async(p)=>{const id=await uid();return sb.from('profiles').update({name:p.name,condition:p.condition,severity:p.severity,wait_time:p.waitTime,concerns:p.concerns}).eq('id',id);},
+  saveName:async(name)=>{const id=await uid();return sb.from('profiles').update({name}).eq('id',id);},
+  saveTheme:async(theme)=>{const id=await uid();return sb.from('profiles').update({theme}).eq('id',id);},
+  setPro:async(v)=>{const id=await uid();return sb.from('profiles').update({is_pro:v}).eq('id',id);},
+  saveAppointment:async(dateStr)=>{const id=await uid();return sb.from('profiles').update({appointment_date:dateStr}).eq('id',id);},
+  saveNotifyPrefs:async(enabled,time)=>{const id=await uid();return sb.from('profiles').update({notify_enabled:enabled,notify_time:time}).eq('id',id);},
+  loadProfile:async()=>{const id=await uid();const{data}=await sb.from('profiles').select('*').eq('id',id).single();return data;},
+  saveLogRow:async(log)=>{const id=await uid();return sb.from('symptom_logs').upsert({user_id:id,log_date:new Date().toISOString().slice(0,10),pain:log.pain,mobility:log.mobility,mood:log.mood,sleep:log.sleep,triggers:log.triggers},{onConflict:'user_id,log_date'});},
+  loadLogs:async()=>{const id=await uid();const{data}=await sb.from('symptom_logs').select('*').eq('user_id',id).order('log_date',{ascending:true});return(data||[]).map(r=>({date:new Date(r.log_date).getTime(),pain:r.pain,mobility:r.mobility,mood:r.mood,sleep:r.sleep,triggers:r.triggers||[]}));},
+  loadPrep:async()=>{const id=await uid();const{data}=await sb.from('prep_items').select('*').eq('user_id',id).order('created_at');const out={tell:[],ask:[]};(data||[]).forEach(r=>out[r.kind].push({id:r.id,text:r.text,done:r.done}));return out;},
+  addPrepRow:async(kind,text,source)=>{const id=await uid();return sb.from('prep_items').insert({user_id:id,kind,text,source:source||'manual'}).select().single();},
+  setPrepDone:(id,done)=>sb.from('prep_items').update({done}).eq('id',id),
+  loadCompletions:async()=>{const id=await uid();const{data}=await sb.from('task_completions').select('task_key').eq('user_id',id);const m={};(data||[]).forEach(r=>{m[r.task_key]=true;});return m;},
+  setTask:async(key,done)=>{const id=await uid();return done?sb.from('task_completions').upsert({user_id:id,task_key:key},{onConflict:'user_id,task_key'}):sb.from('task_completions').delete().eq('user_id',id).eq('task_key',key);},
+  wipeData:async()=>{const id=await uid();await sb.from('symptom_logs').delete().eq('user_id',id);await sb.from('prep_items').delete().eq('user_id',id);await sb.from('task_completions').delete().eq('user_id',id);await sb.from('profiles').update({name:null,condition:null,severity:null,wait_time:null,concerns:null,is_pro:false}).eq('id',id);}
+};
+
+// ===== STATE =====
+const state={ob:{step:1,name:'',condition:'',severity:5,waitTime:'',concerns:[]},profile:null,startDate:Date.now()-47*86400000,logs:[],completed:{},plan:[],prep:{tell:[],ask:[]},coach:{history:[],used:0,paid:false},region:'England',theme:'light'};
+let currentEmail=null;let authView='login';let currentScreen='home';let planDay=0;
+function resetOnboardingFields(){state.ob={step:1,name:'',condition:'',severity:5,waitTime:'',concerns:[]};state.logs=[];state.completed={};state.plan=[];state.prep={tell:[],ask:[]};state.coach={history:[],used:0,paid:false};}
+
+// ===== THEME =====
+function applyTheme(t){state.theme=t;document.documentElement.setAttribute('data-theme',t);}
+async function toggleTheme(){applyTheme(state.theme==='dark'?'light':'dark');try{await db.saveTheme(state.theme);}catch(e){}if(!document.getElementById('app').classList.contains('hide'))renderHeader(currentScreen);if(document.getElementById('manage').classList.contains('open'))renderManage();}
+
+// ===== SPLASH =====
+let splashDone=false;
+function endSplash(){if(splashDone)return;splashDone=true;const s=document.getElementById('splash');s.classList.add('fade');setTimeout(function(){s.classList.add('hide');bootSession();},600);}
+
+// ===== SESSION =====
+function showAuth(){document.getElementById('app').classList.add('hide');document.getElementById('onboarding').classList.add('hide');document.getElementById('auth').classList.remove('hide');authMode('login');}
+async function bootSession(){
+  let user=null;try{user=await db.currentUser();}catch(e){}
+  if(!user){showAuth();return;}
+  currentEmail=user.email;
+  let profile=null;try{profile=await db.loadProfile();}catch(e){}
+  applyTheme(profile&&profile.theme?profile.theme:'light');
+  if(!profile||!profile.condition){resetOnboardingFields();enterOnboarding();return;}
+  state.profile={name:profile.name,condition:profile.condition,severity:profile.severity,waitTime:profile.wait_time,concerns:profile.concerns||[],capacity:'medium',appointment:profile.appointment_date||null,notifyEnabled:!!profile.notify_enabled,notifyTime:profile.notify_time||'09:00'};
+  state.coach.paid=!!profile.is_pro;
+  state.startDate=profile.start_date?new Date(profile.start_date).getTime():Date.now();
+  generatePlan();
+  try{state.logs=await db.loadLogs();}catch(e){state.logs=[];}
+  try{state.prep=await db.loadPrep();}catch(e){state.prep={tell:[],ask:[]};}
+  try{state.completed=await db.loadCompletions();}catch(e){state.completed={};}
+  document.getElementById('auth').classList.add('hide');document.getElementById('onboarding').classList.add('hide');document.getElementById('app').classList.remove('hide');nav('home');
+  if(state.profile.notifyEnabled)startReminderLoop();
+}
+
+// ===== AUTH =====
+function authMode(m){authView=m;document.getElementById('tabLogin').classList.toggle('active',m==='login');document.getElementById('tabSignup').classList.toggle('active',m==='signup');renderAuthForm();}
+function renderAuthForm(){
+  const f=document.getElementById('authForm');
+  const ph=authView==='signup'?'At least 6 characters':'Your password';
+  const cta=authView==='login'?'Log in':'Create account';
+  f.innerHTML='<label class="field-label">Email</label><input class="input-field" id="auEmail" type="email" placeholder="you@example.com" autocomplete="email"><label class="field-label">Password</label><input class="input-field" id="auPass" type="password" placeholder="'+ph+'"><div class="auth-err" id="auErr"></div><button class="btn" id="auSubmit">'+cta+'</button>';
+  document.getElementById('auSubmit').addEventListener('click',submitAuth);
+  document.getElementById('auPass').addEventListener('keydown',function(e){if(e.key==='Enter')submitAuth();});
+}
+async function submitAuth(){
+  const email=(document.getElementById('auEmail').value||'').trim().toLowerCase();
+  const pass=document.getElementById('auPass').value||'';
+  const err=document.getElementById('auErr');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent='Please enter a valid email address.';return;}
+  if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  const btn=document.getElementById('auSubmit');btn.disabled=true;btn.textContent='Please wait…';
+  try{
+    const fn=authView==='signup'?db.signUp:db.signIn;
+    const{data,error}=await fn(email,pass);
+    if(error){err.textContent=error.message;btn.disabled=false;btn.textContent=authView==='login'?'Log in':'Create account';return;}
+    if(!data.session){err.textContent='Check your email to confirm your account, then log in.';btn.disabled=false;btn.textContent='Create account';return;}
+    await bootSession();
+  }catch(e){err.textContent='Something went wrong. Please try again.';btn.disabled=false;}
+}
+function enterOnboarding(){applyTheme(state.theme);document.getElementById('auth').classList.add('hide');document.getElementById('app').classList.add('hide');document.getElementById('onboarding').classList.remove('hide');renderOb();}
+async function signOut(){if(!confirm('Sign out?'))return;try{await db.signOutUser();}catch(e){}location.reload();}
+async function deleteAccount(){if(!confirm('Delete all your data and sign out? This cannot be undone.'))return;try{await db.wipeData();await db.signOutUser();}catch(e){}location.reload();}
+
+// ===== LIBRARY =====
+const CONDITIONS=[{id:'knee',icon:'🦵',name:'Knee / hip',desc:'Replacement, repair, arthritis',full:'knee or hip surgery'},{id:'back',icon:'🔙',name:'Back / spine',desc:'Pain, disc, physio',full:'back or spine treatment'},{id:'mental',icon:'🧠',name:'Mental health',desc:'Therapy, psychiatry, IAPT',full:'mental health support'},{id:'cardiac',icon:'❤️',name:'Cardiac care',desc:'Heart, diagnostics',full:'cardiac care'},{id:'gastro',icon:'🩺',name:'General surgery',desc:'Hernia, gallbladder, general',full:'general surgery'},{id:'other',icon:'➕',name:'Other',desc:'Specialist / outpatient',full:'specialist treatment'}];
+const WAITS=['Under 3 months','3–6 months','6–12 months','Over 12 months'];
+const CONCERNS=['Pain management','Sleep problems','Anxiety / worry','Mobility & daily life','Work & finances','Not knowing what to do','Fear about surgery','Family impact'];
+const LIB={
+  knee:{move:[{t:'Seated leg raises',d:'Sit tall, slowly straighten one leg, hold 3s, lower. 2x8 per leg.',m:'5 min · gentle'},{t:'Ankle pumps & circles',d:'Keeps circulation and joints moving while seated.',m:'3 min · very gentle'},{t:'Short flat walk',d:'Gentle stroll on level ground. Use a stick if it helps.',m:'10 min · light'},{t:'Heel slides',d:'Lying down, slide heel toward you, bending the knee within comfort.',m:'5 min · gentle'}],mind:[{t:'Managing waiting uncertainty',d:'3-min reframing prompt on what you can and cannot control.',m:'3 min'},{t:'Box breathing',d:'In 4, hold 4, out 4, hold 4. Eases pain-related tension.',m:'4 min'}]},
+  back:{move:[{t:'Pelvic tilts',d:'Lying down, gently flatten lower back to the floor, hold, release.',m:'5 min · gentle'},{t:'Knee-to-chest stretch',d:'Bring one knee gently toward chest within comfort, hold 20s.',m:'5 min · gentle'},{t:'Short posture walk',d:'Gentle walk focusing on relaxed, upright posture.',m:'10 min · light'},{t:'Cat-cow mobility',d:'On hands and knees, slowly arch and round the back within comfort.',m:'4 min · gentle'}],mind:[{t:'Pain & stress link',d:'Short prompt on how tension feeds pain, and how to interrupt it.',m:'3 min'},{t:'Progressive relaxation',d:'Tense and release muscle groups to ease guarding.',m:'5 min'}]},
+  mental:{move:[{t:'Outdoor walk',d:'Gentle walk outside - daylight and movement both lift mood.',m:'15 min · light'},{t:'Gentle stretch routine',d:'Loosen shoulders, neck and back to release tension.',m:'5 min'}],mind:[{t:'Grounding 5-4-3-2-1',d:'Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.',m:'4 min'},{t:'Worry window',d:'Write worries for 5 min, then close the notebook for the day.',m:'5 min'},{t:'One small connection',d:'Message one person or plan a brief catch-up.',m:'3 min'},{t:'Self-compassion prompt',d:'A short reframing exercise for the hard parts of waiting.',m:'4 min'}]},
+  cardiac:{move:[{t:'Gentle seated movement',d:'Light arm and leg movements while seated to stay active safely.',m:'5 min · very gentle'},{t:'Slow short walk',d:'Relaxed walk at a pace where you can still hold a conversation.',m:'10 min · light'}],mind:[{t:'Calm breathing',d:'Slow, even breaths to settle a racing mind. Stop if you feel unwell.',m:'4 min'},{t:'Health anxiety check-in',d:'Short prompt to separate worry-thoughts from action steps.',m:'4 min'}]},
+  gastro:{move:[{t:'Gentle walking',d:'Short, frequent walks help general fitness before an operation.',m:'10 min · light'},{t:'Breathing & posture',d:'Deep breaths and gentle stretches to stay relaxed and mobile.',m:'5 min'}],mind:[{t:'Pre-surgery expectations',d:'A short, realistic primer on what waiting and prep involves.',m:'4 min'},{t:'Calm breathing',d:'Box breathing to ease pre-op nerves.',m:'4 min'}]},
+  other:{move:[{t:'Gentle daily walk',d:'Light movement at a comfortable level keeps you active.',m:'10 min · light'},{t:'Full-body stretch',d:'Loosen major muscle groups gently.',m:'5 min'}],mind:[{t:'Managing the wait',d:'A short prompt on staying steady through an uncertain timeline.',m:'3 min'},{t:'Breathing reset',d:'A few minutes of slow breathing to lower stress.',m:'4 min'}]}
+};
+const REST=[{t:'Planned rest block',d:'Schedule 20-30 min of genuine rest - no screens, no chores.',m:'20 min'},{t:'Gentle day - ease off',d:'A recovery day. Keep movement minimal and listen to your body.',m:'all day'}];
+const LOG=[{t:'Log today\u2019s symptoms',d:'Quick check-in: pain, mobility, mood, sleep. Builds your clinician report.',m:'2 min'},{t:'Note any flare triggers',d:'Tag anything that made symptoms worse - patterns help your consultant.',m:'1 min'}];
+const PREP=[{t:'Add a question for your consultant',d:'Think of one thing to ask at your next appointment and save it.',m:'2 min'},{t:'Update your things-to-tell list',d:'Jot how this week has felt to share with your care team.',m:'2 min'}];
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const FOCUS={knee:['Mobility','Strength','Active recovery','Strength','Mobility','Gentle day','Reflect & prep'],back:['Mobility','Core & posture','Active recovery','Mobility','Strength','Gentle day','Reflect & prep'],mental:['Routine','Connection','Calm & rest','Activity','Connection','Self-care','Reflect & prep'],cardiac:['Gentle activity','Calm','Active recovery','Gentle activity','Calm','Rest day','Reflect & prep'],gastro:['Prep & fitness','Calm','Active recovery','Prep & fitness','Calm','Rest day','Reflect & prep'],other:['Activity','Calm','Active recovery','Activity','Calm','Rest day','Reflect & prep']};
+const SEED_Q={knee:['What should I do if my pain worsens significantly before surgery?','Are there exercises I should avoid pre-op?','What is the expected recovery timeline?'],back:['Could my symptoms cause any lasting damage while I wait?','Which activities should I avoid right now?','When should I seek urgent help?'],mental:['What support is available while I wait for therapy?','Are there self-help resources you would recommend?','What should I do if things get worse?'],cardiac:['What symptoms should prompt me to seek urgent care?','Is it safe to exercise while I wait?','Should I make any changes to my medication routine?'],gastro:['How should I manage symptoms while waiting?','What should I do if my condition flares?','How can I best prepare for the operation?'],other:['What should I do if my symptoms change?','Are there things I can do to prepare?','Who do I contact if I am worried?']};
+function pick(a,i){return a[i%a.length];}
+function buildDay(idx){
+  const c=state.profile.condition,sev=state.profile.severity,cap=state.profile.capacity||'medium';
+  const tasks=[];const lowLoad=sev>=7||cap==='low',highLoad=sev<=4&&cap==='high';
+  if(idx===5){tasks.push(Object.assign({},pick(REST,1),{cat:'rest'}));tasks.push(Object.assign({},pick(LIB[c].mind,idx),{cat:'mind'}));tasks.push(Object.assign({},pick(LOG,0),{cat:'log'}));return tasks;}
+  if(lowLoad){tasks.push(Object.assign({},LIB[c].move[Math.min(1,LIB[c].move.length-1)],{cat:'move'}));tasks.push(Object.assign({},pick(REST,0),{cat:'rest'}));}
+  else{tasks.push(Object.assign({},pick(LIB[c].move,idx),{cat:'move'}));if(highLoad&&LIB[c].move.length>2)tasks.push(Object.assign({},pick(LIB[c].move,idx+2),{cat:'move'}));}
+  tasks.push(Object.assign({},pick(LIB[c].mind,idx),{cat:'mind'}));tasks.push(Object.assign({},pick(LOG,idx),{cat:'log'}));
+  if(idx===6||idx===3)tasks.push(Object.assign({},pick(PREP,idx),{cat:'prep'}));
+  return tasks;
+}
+function generatePlan(){state.plan=DAYS.map(function(_,i){return buildDay(i);});}
+
+// ===== ONBOARDING =====
+function renderOb(){document.getElementById('obFill').style.width=(state.ob.step/5*100)+'%';[ob1,ob2,ob3,ob4,ob5][state.ob.step-1]();}
+function obNext(){if(state.ob.step<5){state.ob.step++;renderOb();}}
+function obBack(){if(state.ob.step>1){state.ob.step--;renderOb();}}
+function ob1(){
+  const b=document.getElementById('obBody');
+  b.innerHTML='<h2>What\u2019s your name?</h2><p class="lead">We\u2019ll use this to personalise your plan and reminders.</p><input class="input-field" id="nm" placeholder="First name" maxlength="30" value="'+escAttr(state.ob.name)+'"><button class="btn" id="ob1b">Continue →</button><p style="font-size:12px;color:var(--text-hint);text-align:center;margin-top:10px;line-height:1.5">Your data is stored securely in your account.</p>';
+  const n=document.getElementById('nm'),btn=document.getElementById('ob1b');btn.disabled=!state.ob.name;
+  n.addEventListener('input',function(e){state.ob.name=e.target.value.trim();btn.disabled=!state.ob.name;});
+  btn.addEventListener('click',function(){if(state.ob.name)obNext();});n.focus();
+}
+function ob2(){
+  const b=document.getElementById('obBody');
+  b.innerHTML='<h2>What are you waiting on?</h2><p class="lead">We\u2019ll tailor your plan, exercises and advice to your situation.</p><div class="cond-grid" id="cg"></div><button class="btn" id="ob2b">Continue →</button><button class="btn-ghost" id="ob2back" style="display:block;width:100%;margin-top:6px">← Back</button>';
+  const g=document.getElementById('cg'),btn=document.getElementById('ob2b');btn.disabled=!state.ob.condition;
+  CONDITIONS.forEach(function(c){const e=document.createElement('div');e.className='cond-card'+(state.ob.condition===c.id?' active':'');e.innerHTML='<div class="cond-icon">'+c.icon+'</div><div class="cond-name">'+c.name+'</div><div class="cond-desc">'+c.desc+'</div>';e.addEventListener('click',function(){state.ob.condition=c.id;document.querySelectorAll('#cg .cond-card').forEach(function(x){x.classList.remove('active');});e.classList.add('active');btn.disabled=false;});g.appendChild(e);});
+  btn.addEventListener('click',function(){if(state.ob.condition)obNext();});
+  document.getElementById('ob2back').addEventListener('click',obBack);
+}
+function ob3(){
+  const b=document.getElementById('obBody');
+  b.innerHTML='<h2>How severe is it right now?</h2><p class="lead">Be honest - this pitches your daily plan at the right level.</p><div class="slider-row"><label>Severity <strong id="sv">'+state.ob.severity+'</strong> / 10</label><input type="range" min="1" max="10" value="'+state.ob.severity+'" id="ss"><div class="sev-labels"><span>Mild</span><span>Moderate</span><span>Severe</span></div></div><button class="btn" id="ob3b">Continue →</button><button class="btn-ghost" id="ob3back" style="display:block;width:100%;margin-top:6px">← Back</button>';
+  const s=document.getElementById('ss');sliderBg(s);
+  s.addEventListener('input',function(e){state.ob.severity=+e.target.value;document.getElementById('sv').textContent=e.target.value;sliderBg(e.target);});
+  document.getElementById('ob3b').addEventListener('click',obNext);document.getElementById('ob3back').addEventListener('click',obBack);
+}
+function ob4(){
+  const b=document.getElementById('obBody');
+  b.innerHTML='<h2>How long is the wait?</h2><p class="lead">A rough estimate is fine - update it any time.</p><div class="wait-grid" id="wg"></div><p class="lead" style="margin-bottom:10px">Main concerns while waiting?</p><div class="tag-row" id="tg"></div><button class="btn" id="ob4b">Continue →</button><button class="btn-ghost" id="ob4back" style="display:block;width:100%;margin-top:6px">← Back</button>';
+  const wg=document.getElementById('wg'),btn=document.getElementById('ob4b');btn.disabled=!state.ob.waitTime;
+  WAITS.forEach(function(w){const e=document.createElement('div');e.className='pill-opt'+(state.ob.waitTime===w?' active':'');e.textContent=w;e.addEventListener('click',function(){state.ob.waitTime=w;document.querySelectorAll('#wg .pill-opt').forEach(function(x){x.classList.remove('active');});e.classList.add('active');btn.disabled=false;});wg.appendChild(e);});
+  const tg=document.getElementById('tg');
+  CONCERNS.forEach(function(c){const e=document.createElement('div');e.className='tag'+(state.ob.concerns.indexOf(c)>=0?' active':'');e.textContent=c;e.addEventListener('click',function(){const i=state.ob.concerns.indexOf(c);if(i>=0)state.ob.concerns.splice(i,1);else state.ob.concerns.push(c);e.classList.toggle('active');});tg.appendChild(e);});
+  btn.addEventListener('click',function(){if(state.ob.waitTime)obNext();});
+  document.getElementById('ob4back').addEventListener('click',obBack);
+}
+function ob5(){
+  const b=document.getElementById('obBody');const c=CONDITIONS.find(function(x){return x.id===state.ob.condition;});
+  const sl=state.ob.severity<=3?'Mild':state.ob.severity<=6?'Moderate':'Severe';
+  const con=state.ob.concerns.length?state.ob.concerns.join(', '):'\u2014';
+  b.innerHTML='<div style="text-align:center"><div class="success-icon">✓</div><h2 style="text-align:center">You\u2019re all set, '+escHtml(state.ob.name)+'!</h2><p class="lead" style="text-align:center">Here\u2019s your profile - we\u2019ll build everything around it.</p></div><div class="summary-card"><div class="summary-row"><span class="sl">Condition</span><span class="sv">'+c.icon+' '+c.name+'</span></div><div class="summary-row"><span class="sl">Severity</span><span class="sv">'+sl+' ('+state.ob.severity+'/10)</span></div><div class="summary-row"><span class="sl">Expected wait</span><span class="sv">'+state.ob.waitTime+'</span></div><div class="summary-row"><span class="sl">Concerns</span><span class="sv" style="font-size:12px">'+escHtml(con)+'</span></div></div><button class="btn" id="ob5b">Go to my dashboard →</button>';
+  document.getElementById('ob5b').addEventListener('click',finishOb);
+}
+async function finishOb(){
+  const btn=document.getElementById('ob5b');if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  state.profile={name:state.ob.name,condition:state.ob.condition,severity:state.ob.severity,waitTime:state.ob.waitTime,concerns:state.ob.concerns,capacity:'medium'};
+  try{
+    await db.saveProfile(state.profile);
+    for(const q of SEED_Q[state.profile.condition]){await db.addPrepRow('ask',q);}
+    state.prep=await db.loadPrep();
+  }catch(e){alert('Could not save your profile. Check your connection and Supabase keys.');if(btn){btn.disabled=false;btn.textContent='Go to my dashboard →';}return;}
+  generatePlan();state.logs=[];state.completed={};
+  document.getElementById('onboarding').classList.add('hide');document.getElementById('app').classList.remove('hide');nav('home');
+}
+function sliderBg(el){const p=((el.value-el.min)/(el.max-el.min))*100;const cs=getComputedStyle(document.documentElement);const fill=(cs.getPropertyValue('--green')||'#1a6b4a').trim();const track=(cs.getPropertyValue('--border')||'#ddd').trim();el.style.background='linear-gradient(to right,'+fill+' 0%,'+fill+' '+p+'%,'+track+' '+p+'%,'+track+' 100%)';}
+
+// ===== NAV / HEADER =====
+function dayOfWait(){return Math.floor((Date.now()-state.startDate)/86400000);}
+function todayIdx(){return (new Date().getDay()+6)%7;}
+function daysUntilAppt(){
+  if(!state.profile||!state.profile.appointment)return null;
+  const a=new Date(state.profile.appointment);a.setHours(0,0,0,0);
+  const t=new Date();t.setHours(0,0,0,0);
+  return Math.round((a.getTime()-t.getTime())/86400000);
+}
+function apptText(){
+  const d=daysUntilAppt();
+  if(d===null)return null;
+  if(d<0)return 'Was '+Math.abs(d)+' day'+(Math.abs(d)===1?'':'s')+' ago';
+  if(d===0)return 'Today';
+  if(d===1)return 'Tomorrow';
+  return 'In '+d+' days';
+}
+function nav(s){currentScreen=s;document.querySelectorAll('.screen').forEach(function(x){x.classList.remove('active');});document.querySelectorAll('.nav-item').forEach(function(x){x.classList.remove('active');});document.getElementById('s-'+s).classList.add('active');document.querySelector('.nav-item[data-s="'+s+'"]').classList.add('active');renderHeader(s);({home:renderHome,tracker:renderTracker,plan:renderPlan,prep:renderPrep,coach:renderCoach,nhs:renderNhs}[s])();}
+function renderHeader(s){
+  const h=document.getElementById('appHeader');const p=state.profile;const c=CONDITIONS.find(function(x){return x.id===p.condition;});
+  const titles={home:'Hi, '+escHtml(p.name||'there'),tracker:'Symptom tracker',plan:'Your daily plan',prep:'Appointment prep',coach:'AI Coach',nhs:'NHS info & support'};
+  const subs={home:c.name+' · '+p.waitTime+' remaining',tracker:'Log how today feels',plan:c.name+' · tailored to you',prep:'Ready for your next appointment',coach:'A calm space to think',nhs:'Trusted guidance for your region'};
+  const themeIcon=state.theme==='dark'?'☀️':'🌙';
+  const badge=s==='home'?'<span class="h-badge">Day '+dayOfWait()+' of wait</span>':'';
+  h.innerHTML='<div class="h-top"><div><h1>'+titles[s]+'</h1><div class="h-sub">'+subs[s]+badge+'</div></div><div class="h-icons"><button class="h-btn" id="hTheme" title="Toggle theme">'+themeIcon+'</button><button class="h-btn" id="hAcct" title="Account">⚙️</button></div></div>';
+  document.getElementById('hTheme').addEventListener('click',toggleTheme);
+  document.getElementById('hAcct').addEventListener('click',openManage);
+}
+
+// ===== HOME =====
+function openApptPicker(){
+  const cur=(state.profile&&state.profile.appointment)||'';
+  const m=document.createElement('div');m.className='modal-bg';m.id='apptModal';
+  m.addEventListener('click',function(e){if(e.target===m)m.remove();});
+  m.innerHTML='<div class="modal"><div class="modal-body">'+
+    '<div style="font-size:16px;font-weight:600;margin-bottom:4px">Your next appointment</div>'+
+    '<p style="font-size:13px;color:var(--text-sub);margin-bottom:14px">We\u2019ll count down to it and remind you to prepare.</p>'+
+    '<div class="field"><label>Date</label><input type="date" id="apptInput" value="'+cur+'"></div>'+
+    '<button class="btn" id="apptSave" style="margin-top:6px">Save</button>'+
+    (cur?'<button class="btn-ghost m-danger" id="apptClear" style="width:100%;margin-top:4px">Remove appointment</button>':'')+
+    '<button class="modal-close" id="apptCancel">Cancel</button>'+
+    '</div></div>';
+  document.getElementById('phone').appendChild(m);
+  document.getElementById('apptSave').addEventListener('click',async function(){
+    const v=document.getElementById('apptInput').value;
+    if(!v){m.remove();return;}
+    state.profile.appointment=v;
+    try{ await db.saveAppointment(v); }catch(e){ console.error('appt save failed',e); }
+    m.remove(); renderHome();
+  });
+  document.getElementById('apptCancel').addEventListener('click',function(){m.remove();});
+  const clr=document.getElementById('apptClear');
+  if(clr)clr.addEventListener('click',async function(){state.profile.appointment=null;try{await db.saveAppointment(null);}catch(e){}m.remove();renderHome();});
+}
+function latestLog(){return state.logs.length?state.logs[state.logs.length-1]:null;}
+function renderHome(){
+  const el=document.getElementById('s-home');const step=state.plan[todayIdx()][0];const lg=latestLog();
+  const openQ=state.prep.ask.filter(function(q){return !q.done;}).length;
+  const aptxt=apptText();
+  const apptCard = aptxt
+    ? '<div class="appt-card" id="apptCard"><div class="appt-icon">📅</div><div><div class="appt-title">Next appointment · '+aptxt+'</div><div class="appt-sub">'+new Date(state.profile.appointment).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+' · '+openQ+' questions ready</div></div></div>'
+    : '<div class="appt-card" id="apptCard" style="cursor:pointer"><div class="appt-icon">📅</div><div><div class="appt-title">Add your appointment</div><div class="appt-sub">Tap to set the date — we\u2019ll count down and remind you</div></div></div>';
+  el.innerHTML='<div class="today-step"><div class="lbl">Today\u2019s small step</div><div class="task">'+escHtml(step.t)+'</div><div class="sub">'+escHtml(step.d)+'</div></div>'+
+    '<div class="section-label">Latest check-in</div>'+
+    '<div class="card"><div class="snap-grid">'+
+    '<div class="snap-item"><div class="emoji">😣</div><div class="val">'+(lg?lg.pain:'\u2013')+'</div><div class="lbl">Pain</div></div>'+
+    '<div class="snap-item"><div class="emoji">🚶</div><div class="val">'+(lg?lg.mobility:'\u2013')+'</div><div class="lbl">Mobility</div></div>'+
+    '<div class="snap-item"><div class="emoji">🙂</div><div class="val">'+(lg?lg.mood:'\u2013')+'</div><div class="lbl">Mood</div></div>'+
+    '<div class="snap-item"><div class="emoji">😴</div><div class="val">'+(lg?lg.sleep:'\u2013')+'</div><div class="lbl">Sleep</div></div>'+
+    '</div><button class="btn" id="homeLog" style="margin-top:12px">Log today →</button></div>'+
+    apptCard+
+    '<div class="card"><div class="card-title">Pain — last 7 days</div>'+chartHtml('pain')+'</div>'+
+    '<div class="card"><div class="card-title">Quick actions</div><button class="btn" id="homeCoach" style="margin-bottom:8px">💬 Talk to your coach</button><button class="btn btn-outline" id="homeAcct">⚙️ Manage my account</button></div>';
+  document.getElementById('homeLog').addEventListener('click',function(){nav('tracker');});
+  document.getElementById('homeCoach').addEventListener('click',function(){nav('coach');});
+  document.getElementById('homeAcct').addEventListener('click',openManage);
+  document.getElementById('apptCard').addEventListener('click',openApptPicker);
+}
+// metric: 'pain' (high=bad) others (high=good). Returns colour by value+polarity.
+function barColour(metric,v){
+  let level; // 0 good,1 ok,2 bad
+  if(metric==='pain'){ level = v<=3?0 : v<=6?1 : 2; }
+  else { level = v>=7?0 : v>=4?1 : 2; } // mobility/mood/sleep: high is good
+  return level===0 ? '#2fa36f' : level===1 ? '#e0a13a' : '#d9534f';
+}
+function buildSeries(metric){
+  // last 7 calendar days, today last; null where no log
+  const today=new Date(); today.setHours(0,0,0,0);
+  const byDay={};
+  state.logs.forEach(function(l){const d=new Date(l.date);d.setHours(0,0,0,0);byDay[d.getTime()]=l;});
+  const out=[];
+  for(let i=6;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);const log=byDay[d.getTime()];
+    out.push({ day:DAYS[(d.getDay()+6)%7], isToday:i===0, val:log?log[metric]:null });}
+  return out;
+}
+function chartHtml(metric){
+  metric=metric||'pain';
+  const series=buildSeries(metric);
+  const have=series.filter(function(s){return s.val!=null;});
+  if(!have.length) return '<div class="empty-note">No logs yet — save today\u2019s symptoms to start your trend.</div>';
+  let bars='';
+  series.forEach(function(s){
+    if(s.val==null){
+      bars+='<div class="bar-col'+(s.isToday?' bar-today':'')+'"><div class="bar-wrap"><div class="bar-empty"></div></div><span class="bar-lbl">'+s.day+'</span></div>';
+    }else{
+      const h=Math.round(s.val/10*70)+8;const col=barColour(metric,s.val);
+      bars+='<div class="bar-col'+(s.isToday?' bar-today':'')+'"><div class="bar-wrap"><div class="bar" style="height:'+h+'px;background:'+col+'"><span class="bar-val">'+s.val+'</span></div></div><span class="bar-lbl">'+s.day+'</span></div>';
+    }
+  });
+  // trend: compare last value to average of earlier ones
+  let trend='';
+  if(have.length>=2){
+    const last=have[have.length-1].val;const prev=have.slice(0,-1);
+    const avg=prev.reduce(function(a,b){return a+b.val;},0)/prev.length;
+    const diff=last-avg;const better = metric==='pain' ? diff<0 : diff>0;
+    const word = Math.abs(diff)<0.5 ? 'Holding steady' : better ? 'Improving' : 'Worse than usual';
+    const cls = Math.abs(diff)<0.5 ? 'trend-flat' : better ? 'trend-down' : 'trend-up';
+    const arrow = Math.abs(diff)<0.5 ? '→' : (diff>0?'↑':'↓');
+    trend='<div class="trend-line"><span style="font-size:12px;color:var(--text-sub)">vs your recent average</span><span class="trend-badge '+cls+'">'+arrow+' '+word+'</span></div>';
+  }
+  const lab=metric==='pain'?'Lower is better':'Higher is better';
+  const legend='<div class="legend"><span><i style="background:#2fa36f"></i>good</span><span><i style="background:#e0a13a"></i>ok</span><span><i style="background:#d9534f"></i>tough</span><span style="margin-left:auto;color:var(--text-hint)">'+lab+'</span></div>';
+  return '<div class="chart">'+bars+'</div>'+legend+trend;
+}
+
+// ===== TRACKER =====
+const tState={pain:5,mobility:6,mood:7,sleep:7,triggers:[]};
+const TRIGGERS=['Prolonged standing','Cold weather','Stress','Stairs','Poor sleep','Overexertion'];
+function renderTracker(){
+  const el=document.getElementById('s-tracker');
+  const proBadge=state.coach.paid?'<span class="badge badge-pro">Pro</span>':'<span class="badge badge-free">Pro only</span>';
+  el.innerHTML='<div class="card"><div class="card-title">Log today\u2019s symptoms</div>'+sliderRow('Pain level','tk-pain',tState.pain)+sliderRow('Mobility','tk-mob',tState.mobility)+sliderRow('Mood','tk-mood',tState.mood)+sliderRow('Sleep quality','tk-sleep',tState.sleep)+'<div class="card-title" style="margin-top:4px">Flare triggers today</div><div class="tag-row" id="tk-trig"></div><button class="btn" id="tkSave" style="margin-top:12px">Save today\u2019s log</button></div>'+
+    '<div class="card"><div class="card-title">Your trends</div><div class="metric-tabs" id="metricTabs"></div><div id="trendChart"></div></div>'+
+    '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-sub)">Export full report '+proBadge+'</span><button class="btn" id="tkExport" style="width:auto;padding:8px 14px">⬇ PDF</button></div></div>';
+  const map={pain:'pain',mob:'mobility',mood:'mood',sleep:'sleep'};
+  ['pain','mob','mood','sleep'].forEach(function(k){const s=document.getElementById('tk-'+k);sliderBg(s);s.addEventListener('input',function(e){tState[map[k]]=+e.target.value;document.getElementById('val-tk-'+k).textContent=e.target.value;sliderBg(e.target);});});
+  const tg=document.getElementById('tk-trig');
+  TRIGGERS.forEach(function(t){const e=document.createElement('div');e.className='tag'+(tState.triggers.indexOf(t)>=0?' active':'');e.textContent=t;e.addEventListener('click',function(){const i=tState.triggers.indexOf(t);if(i>=0)tState.triggers.splice(i,1);else tState.triggers.push(t);e.classList.toggle('active');});tg.appendChild(e);});
+  document.getElementById('tkSave').addEventListener('click',saveLog);
+  document.getElementById('tkExport').addEventListener('click',exportReport);
+  renderMetricChart('pain');
+}
+let activeMetric='pain';
+function renderMetricChart(metric){
+  activeMetric=metric;
+  const tabs=document.getElementById('metricTabs');if(!tabs)return;
+  const metrics=[['pain','Pain'],['mobility','Mobility'],['mood','Mood'],['sleep','Sleep']];
+  tabs.innerHTML=metrics.map(function(m){return '<div class="metric-tab'+(m[0]===metric?' active':'')+'" data-m="'+m[0]+'">'+m[1]+'</div>';}).join('');
+  tabs.querySelectorAll('.metric-tab').forEach(function(t){t.addEventListener('click',function(){renderMetricChart(t.getAttribute('data-m'));});});
+  document.getElementById('trendChart').innerHTML=chartHtml(metric);
+}
+function sliderRow(label,id,val){return '<div class="slider-row"><label>'+label+' <strong id="val-'+id+'">'+val+'</strong></label><input type="range" min="1" max="10" value="'+val+'" id="'+id+'"></div>';}
+async function saveLog(){
+  const btn=document.getElementById('tkSave');btn.disabled=true;btn.textContent='Saving…';
+  try{
+    const { error } = await db.saveLogRow(tState);
+    if(error) throw error;
+    if(tState.pain>=7)await db.addPrepRow('tell','Pain reached '+tState.pain+'/10 - logged on '+new Date().toLocaleDateString('en-GB'),'auto');
+    state.logs=await db.loadLogs();
+    state.prep=await db.loadPrep();
+  }catch(e){
+    console.error('saveLog failed:',e);
+    alert('Could not save your log: '+(e.message||e)+'\n\nCheck you are logged in and the symptom_logs table exists.');
+    btn.disabled=false;btn.textContent='Save today\u2019s log';return;
+  }
+  alert('Saved! Your trend has updated.');
+  nav('tracker');
+}
+function exportReport(){
+  if(!state.coach.paid){alert('PDF export is a Pro feature. Upgrade from the Coach tab to unlock it.');return;}
+  if(!state.logs.length){alert('No symptom logs yet — log a few days first, then export.');return;}
+  generateReportPDF();
+}
+function avgOf(arr,key){const v=arr.map(function(l){return l[key];}).filter(function(x){return typeof x==='number';});if(!v.length)return '—';return (v.reduce(function(a,b){return a+b;},0)/v.length).toFixed(1);}
+function generateReportPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'pt',format:'a4'});
+  const W=595, M=48; let y=56;
+  const p=state.profile;
+  const cond=CONDITIONS.find(function(x){return x.id===p.condition;});
+  const logs=state.logs.slice(); // ascending by date
+  const recent=logs.slice(-28); // last 4 weeks
+
+  // Header
+  doc.setFillColor(26,107,74);doc.rect(0,0,W,84,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(20);
+  doc.text('WaitWell — Symptom Report',M,46);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);
+  doc.text('Prepared for your NHS appointment',M,64);
+  y=112;
+
+  // Patient / context
+  doc.setTextColor(20,20,20);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('Patient summary',M,y);y+=18;
+  doc.setFont('helvetica','normal');doc.setFontSize(10.5);doc.setTextColor(60,60,60);
+  const lines=[
+    'Name: '+(p.name||'—'),
+    'Waiting for: '+(cond?cond.name:'—')+'  ·  Reported severity at onboarding: '+p.severity+'/10',
+    'Expected wait: '+(p.waitTime||'—')+'  ·  On waiting list ~'+dayOfWait()+' days',
+    'Next appointment: '+(p.appointment?new Date(p.appointment).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'not set'),
+    'Report generated: '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})
+  ];
+  lines.forEach(function(t){doc.text(t,M,y);y+=15;});
+  y+=10;
+
+  // Averages box
+  doc.setDrawColor(220,220,220);doc.setFillColor(245,248,246);doc.roundedRect(M,y,W-2*M,72,6,6,'FD');
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(20,20,20);
+  doc.text('Averages over last '+recent.length+' logged day(s)',M+14,y+20);
+  doc.setFont('helvetica','normal');doc.setFontSize(11);
+  const cols=[['Pain',avgOf(recent,'pain')+' /10'],['Mobility',avgOf(recent,'mobility')+' /10'],['Mood',avgOf(recent,'mood')+' /10'],['Sleep',avgOf(recent,'sleep')+' /10']];
+  const cw=(W-2*M-28)/4;
+  cols.forEach(function(c,i){const x=M+14+i*cw;doc.setTextColor(120,120,120);doc.setFontSize(9);doc.text(c[0],x,y+40);doc.setTextColor(26,107,74);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text(c[1],x,y+58);doc.setFont('helvetica','normal');});
+  y+=92;
+
+  // Daily log table
+  doc.setTextColor(20,20,20);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('Daily log (most recent first)',M,y);y+=16;
+  // table header
+  doc.setFillColor(26,107,74);doc.rect(M,y,W-2*M,22,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(9.5);
+  const colX=[M+8,M+120,M+190,M+265,M+335,M+405];
+  ['Date','Pain','Mobility','Mood','Sleep','Triggers'].forEach(function(h,i){doc.text(h,colX[i],y+15);});
+  y+=22;
+  doc.setTextColor(40,40,40);doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+  const rows=logs.slice().reverse();
+  rows.forEach(function(l,idx){
+    if(y>790){doc.addPage();y=56;}
+    if(idx%2===0){doc.setFillColor(247,249,247);doc.rect(M,y,W-2*M,20,'F');}
+    const d=new Date(l.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+    const trig=(l.triggers&&l.triggers.length)?l.triggers.join(', '):'—';
+    doc.text(d,colX[0],y+14);
+    doc.text(String(l.pain),colX[1],y+14);
+    doc.text(String(l.mobility),colX[2],y+14);
+    doc.text(String(l.mood),colX[3],y+14);
+    doc.text(String(l.sleep),colX[4],y+14);
+    doc.text(doc.splitTextToSize(trig,150)[0]||'—',colX[5],y+14);
+    y+=20;
+  });
+
+  // Flare triggers summary
+  const counts={};logs.forEach(function(l){(l.triggers||[]).forEach(function(t){counts[t]=(counts[t]||0)+1;});});
+  const trigArr=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];});
+  if(y>720){doc.addPage();y=56;}
+  y+=14;
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(20,20,20);
+  doc.text('Most common flare triggers',M,y);y+=16;
+  doc.setFont('helvetica','normal');doc.setFontSize(10.5);doc.setTextColor(60,60,60);
+  if(!trigArr.length){doc.text('None recorded.',M,y);y+=15;}
+  else{trigArr.slice(0,8).forEach(function(t){doc.text('• '+t+'  ('+counts[t]+' day'+(counts[t]===1?'':'s')+')',M,y);y+=15;});}
+
+  // Footer disclaimer
+  if(y>770){doc.addPage();y=56;}
+  y+=10;doc.setDrawColor(220,220,220);doc.line(M,y,W-M,y);y+=14;
+  doc.setFontSize(8.5);doc.setTextColor(130,130,130);
+  const disc=doc.splitTextToSize('This report is a self-recorded symptom diary generated by WaitWell (a Damon Dynamics app). It is patient-reported information to support your conversation with a clinician and is not a medical assessment or diagnosis.',W-2*M);
+  doc.text(disc,M,y);
+
+  doc.save('WaitWell-symptom-report-'+new Date().toISOString().slice(0,10)+'.pdf');
+}
+
+// ===== PLAN =====
+function renderPlan(){
+  const el=document.getElementById('s-plan');
+  el.innerHTML='<div class="week-nav" id="wn"></div><div id="planTasks"></div><div class="disclaimer">General wellbeing guidance, not medical advice. Stop any activity that causes sharp or worsening pain, and follow advice from your GP, surgeon or physiotherapist.</div>';
+  renderWeekNav();renderPlanTasks();
+}
+function renderWeekNav(){const wn=document.getElementById('wn');wn.innerHTML='';DAYS.forEach(function(d,i){const e=document.createElement('div');e.className='day-pill'+(i===planDay?' active':'');e.innerHTML=d+'<span class="n">Day '+(i+1)+'</span>';e.addEventListener('click',function(){planDay=i;renderWeekNav();renderPlanTasks();});wn.appendChild(e);});}
+const CATM={move:{i:'🏃',c:'move',l:'Move'},rest:{i:'🛌',c:'rest',l:'Rest'},mind:{i:'🧘',c:'mind',l:'Mind'},log:{i:'📝',c:'log',l:'Track'},prep:{i:'📋',c:'prep',l:'Appt prep'}};
+function renderPlanTasks(){
+  const wrap=document.getElementById('planTasks');const tasks=state.plan[planDay];const focus=FOCUS[state.profile.condition][planDay];
+  let html='<div style="padding:4px 2px 10px"><div style="font-size:16px;font-weight:600">'+DAYS[planDay]+' · Day '+(planDay+1)+'</div><div style="font-size:13px;color:var(--text-sub)">Focus: '+focus+'</div></div>';
+  tasks.forEach(function(t,idx){const m=CATM[t.cat];const key=planDay+'-'+idx;const done=state.completed[key];html+='<div class="task '+(done?'done':'')+'"><div class="task-icon t-'+m.c+'">'+m.i+'</div><div class="task-body"><div class="task-cat cat-'+m.c+'">'+m.l+'</div><div class="task-title">'+escHtml(t.t)+'</div><div class="task-detail">'+escHtml(t.d)+'</div><div class="task-meta">⏱ '+t.m+'</div></div><div class="check '+(done?'done':'')+'" data-key="'+key+'"></div></div>';});
+  wrap.innerHTML=html;
+  wrap.querySelectorAll('.check').forEach(function(ch){ch.addEventListener('click',function(){toggleTask(ch.getAttribute('data-key'));});});
+}
+async function toggleTask(key){state.completed[key]=!state.completed[key];renderPlanTasks();try{await db.setTask(key,state.completed[key]);}catch(e){}}
+
+// ===== PREP =====
+function renderPrep(){
+  const el=document.getElementById('s-prep');
+  el.innerHTML='<div class="card"><div class="card-title">Things to tell your consultant</div><div id="tellList"></div><div class="prep-add"><input id="tellInput" placeholder="Add something to mention..."><button id="tellAdd">Add</button></div></div><div class="card"><div class="card-title">Questions to ask <span class="badge badge-free">Free</span></div><div id="askList"></div><div class="prep-add"><input id="askInput" placeholder="Add a question..."><button id="askAdd">Add</button></div></div><button class="btn" id="prepShare">Share prep sheet ↗</button>';
+  renderPrepList('tell');renderPrepList('ask');
+  document.getElementById('tellAdd').addEventListener('click',function(){addPrep('tell');});
+  document.getElementById('askAdd').addEventListener('click',function(){addPrep('ask');});
+  document.getElementById('prepShare').addEventListener('click',sharePrep);
+}
+function renderPrepList(type){
+  const wrap=document.getElementById(type+'List');const items=state.prep[type];
+  if(!items.length){wrap.innerHTML='<div class="empty-note">Nothing yet - add items below, or they\u2019ll appear as you log symptoms.</div>';return;}
+  let html='';items.forEach(function(it,i){html+='<div class="prep-item"><div class="check '+(it.done?'done':'')+'" data-i="'+i+'"></div><div class="prep-text" style="'+(it.done?'text-decoration:line-through;opacity:0.6':'')+'">'+escHtml(it.text)+'</div></div>';});
+  wrap.innerHTML=html;
+  wrap.querySelectorAll('.check').forEach(function(ch){ch.addEventListener('click',function(){togglePrep(type,+ch.getAttribute('data-i'));});});
+}
+async function addPrep(type){
+  const inp=document.getElementById(type+'Input');const v=inp.value.trim();if(!v)return;
+  inp.value='';
+  try{const{data}=await db.addPrepRow(type,v);state.prep[type].push({id:data.id,text:v,done:false});}
+  catch(e){state.prep[type].push({id:null,text:v,done:false});}
+  renderPrepList(type);
+}
+async function togglePrep(type,i){const item=state.prep[type][i];item.done=!item.done;renderPrepList(type);if(item.id){try{await db.setPrepDone(item.id,item.done);}catch(e){}}}
+function sharePrep(){alert('In the real app this generates a shareable checklist (PDF or link) to bring to your appointment.');}
+
+// ===== COACH =====
+const CRISIS_TERMS=['suicide','kill myself','end my life','end it all','want to die','self harm','self-harm','hurt myself','no reason to live','better off dead','cant go on',"can't go on"];
+const CRISIS_BLOCK='<div class="ch">⚠ Please reach out for support now</div>It sounds like you\u2019re going through something really painful, and you don\u2019t have to face it alone:<br><br>• <strong>Samaritans</strong> — <a href="tel:116123">116 123</a> (free, 24/7)<br>• <strong>NHS 111</strong> — <a href="tel:111">111</a>, choose the mental health option<br>• <strong>Immediate danger</strong> — <a href="tel:999">999</a> or go to A&E<br><br>Please reach out to someone you trust to be with you. You matter, and help is available.';
+const FREE_LIMIT=5;
+// Compares the most recent 7 logged days against the prior 7, per metric.
+function coachTrendSummary(){
+  const logs=state.logs;
+  if(!logs.length)return 'No symptom logs recorded yet.';
+  const recent=logs.slice(-7);
+  const prior=logs.slice(-14,-7);
+  const mean=function(arr,k){const v=arr.map(function(l){return l[k];}).filter(function(x){return typeof x==='number';});return v.length?v.reduce(function(a,b){return a+b;},0)/v.length:null;};
+  // Lower is better for pain; higher is better for mobility/mood/sleep.
+  const metrics=[['pain','Pain',false],['mobility','Mobility',true],['mood','Mood',true],['sleep','Sleep',true]];
+  const parts=metrics.map(function(m){
+    const r=mean(recent,m[0]);if(r===null)return null;
+    const pr=mean(prior,m[0]);
+    let dir='';
+    if(pr!==null){
+      const diff=r-pr;
+      if(Math.abs(diff)<0.5)dir=' (steady)';
+      else{const better=m[2]?diff>0:diff<0;dir=better?' (improving)':' (worsening)';}
+    }
+    return m[1]+' avg '+r.toFixed(1)+'/10'+dir;
+  }).filter(Boolean);
+  // Top flare triggers across all logs
+  const counts={};logs.forEach(function(l){(l.triggers||[]).forEach(function(t){counts[t]=(counts[t]||0)+1;});});
+  const top=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).slice(0,3);
+  let out='Last 7 logged days vs the 7 before: '+parts.join('; ')+'.';
+  if(top.length)out+=' Most frequent flare triggers: '+top.join(', ')+'.';
+  out+=' ('+logs.length+' day'+(logs.length===1?'':'s')+' logged in total.)';
+  return out;
+}
+function coachAppointmentLine(){
+  if(!state.profile.appointment)return 'No appointment date set yet.';
+  const d=daysUntilAppt();
+  const dateStr=new Date(state.profile.appointment).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  if(d===null)return 'Appointment: '+dateStr+'.';
+  if(d<0)return 'Last appointment was '+dateStr+' ('+Math.abs(d)+' day'+(Math.abs(d)===1?'':'s')+' ago).';
+  if(d===0)return 'Appointment is TODAY ('+dateStr+').';
+  if(d===1)return 'Appointment is TOMORROW ('+dateStr+').';
+  return 'Next appointment in '+d+' days ('+dateStr+').';
+}
+function coachSystemPrompt(){
+  const p=state.profile;const c=CONDITIONS.find(function(x){return x.id===p.condition;});const lg=latestLog();
+  const logLine=lg?'pain '+lg.pain+'/10, mobility '+lg.mobility+'/10, mood '+lg.mood+'/10, sleep '+lg.sleep+'/10':'none yet';
+  const concerns=p.concerns.join(', ')||'not specified';
+  return 'You are the WaitWell AI Coach, a warm, grounded companion for someone in the UK on an NHS waiting list. Help them feel less alone and more in control during a long, anxious wait.\n\nUSER PROFILE (use naturally, do not recite):\n- Name: '+p.name+'\n- Waiting for: '+c.full+'\n- Severity at onboarding: '+p.severity+'/10\n- Expected wait: '+p.waitTime+'; currently day '+dayOfWait()+'\n- Main concerns: '+concerns+'\n- Latest symptom log: '+logLine+'\n- Symptom trends: '+coachTrendSummary()+'\n- '+coachAppointmentLine()+'\n\nHOW TO RESPOND:\n- One short line of genuine acknowledgement, then 2-3 concrete, small, realistic next steps as a numbered list. Under ~120 words. Calm, plain-spoken British tone, no emojis. Use the symptom trends when relevant (e.g. note an improving or worsening pattern), and reference the appointment timing when it helps them feel prepared. Suggest things like ringing the GP/consultant secretary to check list position, a brief coping technique, or logging something to raise at the appointment.\n\nHARD RULES:\n- You are NOT a clinician. Never diagnose, recommend medication changes, estimate medical timelines, or judge whether symptoms are serious. For anything clinical, direct them to their GP, NHS 111, or care team.\n- Never claim you can change their place on the waiting list.\n- If they express suicidal thoughts, self-harm, or being unable to stay safe, drop the coaching format and respond with warmth and urgency, pointing to Samaritans 116 123, NHS 111 option 2, or 999/A&E, and encourage them to reach out to someone they trust.';
+}
+function renderCoach(){
+  const el=document.getElementById('s-coach');
+  el.innerHTML='<div class="context-bar" id="ctxBar"></div><button id="apptSummaryBtn" style="align-self:flex-start;margin:0 0 8px;padding:7px 13px;border-radius:var(--radius-pill);border:1.5px solid var(--green);background:var(--green-light);color:var(--green-dark);font-size:12px;font-weight:600;cursor:pointer">📋 Summary for my appointment</button><div class="chat" id="chat"></div><div class="coach-input"><textarea id="cin" rows="1" placeholder="Type a worry or question..."></textarea><button class="coach-send" id="csend">↑</button></div><div style="font-size:10px;color:var(--text-hint);text-align:center">Not a substitute for medical or mental-health care. In a crisis call 999 or Samaritans 116 123.</div>';
+  updateCtxBar();
+  if(!state.coach.history.length){addCoachMsg('Hi '+escHtml(state.profile.name||'there')+' - this is a calm space to think things through while you wait. What\u2019s on your mind today?','ai');}
+  else{state.coach.history.forEach(function(m){addCoachMsg(m.role==='user'?escHtml(m.content):formatReply(m.content),m.role==='user'?'user':'ai');});}
+  const cin=document.getElementById('cin');
+  cin.addEventListener('input',function(){cin.style.height='auto';cin.style.height=Math.min(cin.scrollHeight,80)+'px';});
+  cin.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();coachSend();}});
+  document.getElementById('csend').addEventListener('click',coachSend);
+  document.getElementById('apptSummaryBtn').addEventListener('click',requestApptSummary);
+}
+function updateCtxBar(){const b=document.getElementById('ctxBar');if(!b)return;const left=Math.max(0,FREE_LIMIT-state.coach.used);const cn=CONDITIONS.find(function(x){return x.id===state.profile.condition;}).name;b.textContent='Knowing your profile: '+cn+' · day '+dayOfWait()+' · '+(state.coach.paid?'Pro (unlimited)':left+' free messages left this week');}
+function addCoachMsg(html,cls){const chat=document.getElementById('chat');if(!chat)return;const e=document.createElement('div');e.className='msg '+cls;e.innerHTML=html;chat.appendChild(e);chat.scrollTop=chat.scrollHeight;return e;}
+function escHtml(t){return (t==null?'':String(t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(t){return escHtml(t).replace(/"/g,'&quot;');}
+function looksLikeCrisis(t){t=t.toLowerCase();return CRISIS_TERMS.some(function(k){return t.indexOf(k)>=0;});}
+function coachSend(){
+  const cin=document.getElementById('cin');const text=cin.value.trim();if(!text)return;
+  cin.value='';cin.style.height='auto';
+  sendCoachTurn(text);
+}
+function requestApptSummary(){
+  // Canned turn that asks the coach to produce a take-to-appointment summary.
+  sendCoachTurn('Please write me a short summary I can take to my next appointment: how my symptoms have been trending, what to mention to the clinician, and 2-3 questions worth asking. Keep it clear and practical.',true);
+}
+function sendCoachTurn(text,isSystemAction){
+  if(!state.coach.paid&&state.coach.used>=FREE_LIMIT){showCoachPaywall();return;}
+  addCoachMsg(escHtml(isSystemAction?'📋 Summary for my appointment':text),'user');
+  if(!isSystemAction&&looksLikeCrisis(text)){addCoachMsg(CRISIS_BLOCK,'crisis');return;}
+  state.coach.history.push({role:'user',content:text});
+  const chat=document.getElementById('chat');
+  const typing=document.createElement('div');typing.className='typing';typing.id='typing';
+  typing.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  chat.appendChild(typing);chat.scrollTop=chat.scrollHeight;
+  document.getElementById('csend').disabled=true;
+  sb.functions.invoke('coach',{ body:{ messages: state.coach.history, system: coachSystemPrompt() } })
+    .then(function(res){
+      const tp=document.getElementById('typing');if(tp)tp.remove();
+      const data=res.data||{};
+      if(data.crisis){ addCoachMsg(CRISIS_BLOCK,'crisis'); return; }
+      if(data.paywall){ showCoachPaywall(); return; }
+      const reply=data.reply||"Sorry, I couldn't respond just now. Please try again.";
+      state.coach.history.push({role:'assistant',content:reply});
+      addCoachMsg(formatReply(reply),'ai');
+      if(!state.coach.paid){ state.coach.used++; updateCtxBar(); }
+    })
+    .catch(function(err){
+      const tp=document.getElementById('typing');if(tp)tp.remove();
+      addCoachMsg("I'm having trouble connecting right now. Please try again.",'ai');
+      console.error(err);
+    })
+    .then(function(){ const b=document.getElementById('csend'); if(b) b.disabled=false; });
+}
+function showCoachPaywall(){const chat=document.getElementById('chat');const e=document.createElement('div');e.className='paywall';e.innerHTML='<h3>You\u2019ve used your free coaching this week</h3><p>Upgrade to WaitWell Pro for unlimited coaching, exportable reports, and pattern analytics.</p><button id="pwUp">Upgrade to Pro</button>';chat.appendChild(e);chat.scrollTop=chat.scrollHeight;document.getElementById('pwUp').addEventListener('click',openCheckout);}
+function formatReply(text){
+  let s=escHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  const lines=s.split('\n').filter(function(l){return l.trim();});
+  let html='',open=false;
+  for(let j=0;j<lines.length;j++){const line=lines[j];const m=line.match(/^\s*\d+[\.\)]\s*(.+)/);if(m){if(!open){html+='<ol>';open=true;}html+='<li>'+m[1]+'</li>';}else{if(open){html+='</ol>';open=false;}html+='<p style="margin-bottom:5px">'+line+'</p>';}}
+  if(open)html+='</ol>';return html;
+}
+
+// ===== STRIPE TEST CHECKOUT =====
+let chosenPlan='yearly';
+function openCheckout(){
+  chosenPlan='yearly';
+  const m=document.createElement('div');m.className='modal-bg';m.id='checkoutModal';
+  m.addEventListener('click',function(e){if(e.target===m)closeCheckout();});
+  m.innerHTML='<div class="modal"><div class="stripe-bar">⬤ TEST MODE — no real payment is taken</div><div class="modal-body">'+
+    '<div class="merchant"><div class="m-ico">♥</div><div><div class="m-name">WaitWell Pro</div><div class="m-sub">Damon Dynamics · Subscription</div></div></div>'+
+    '<div class="plan-pick" id="planPick"><div class="plan-opt" data-plan="monthly"><div class="pp">£3.99</div><div class="pl">per month</div></div><div class="plan-opt active" data-plan="yearly"><div class="pp">£29.99</div><div class="pl">per year</div><div class="save">Save 37%</div></div></div>'+
+    '<div class="test-hint">Use Stripe\u2019s test card:<br><strong>4242 4242 4242 4242</strong> · any future date · any CVC</div>'+
+    '<div class="field"><label>Email</label><input id="ckEmail" type="email" value="'+escAttr(currentEmail||'')+'" placeholder="you@example.com"></div>'+
+    '<div class="field"><label>Card number</label><input id="ckCard" inputmode="numeric" placeholder="1234 1234 1234 1234"></div>'+
+    '<div class="field-row"><div class="field"><label>Expiry</label><input id="ckExp" placeholder="MM / YY"></div><div class="field"><label>CVC</label><input id="ckCvc" inputmode="numeric" placeholder="123" maxlength="4"></div></div>'+
+    '<div class="modal-err" id="ckErr"></div>'+
+    '<button class="pay-btn" id="ckPay">Pay £29.99</button>'+
+    '<button class="modal-close" id="ckCancel">Cancel</button>'+
+    '<div class="powered">🔒 Mock of Stripe Checkout · live version uses Stripe.js + webhook (Phase 1c)</div>'+
+    '</div></div>';
+  document.getElementById('phone').appendChild(m);
+  m.querySelectorAll('.plan-opt').forEach(function(o){o.addEventListener('click',function(){pickPlan(o.getAttribute('data-plan'));});});
+  document.getElementById('ckCard').addEventListener('input',function(e){fmtCard(e.target);});
+  document.getElementById('ckExp').addEventListener('input',function(e){fmtExp(e.target);});
+  document.getElementById('ckPay').addEventListener('click',payNow);
+  document.getElementById('ckCancel').addEventListener('click',closeCheckout);
+}
+function pickPlan(p){chosenPlan=p;document.querySelectorAll('.plan-opt').forEach(function(o){o.classList.toggle('active',o.getAttribute('data-plan')===p);});document.getElementById('ckPay').textContent='Pay '+(p==='yearly'?'£29.99':'£3.99');}
+function fmtCard(el){el.value=el.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();}
+function fmtExp(el){let v=el.value.replace(/\D/g,'').slice(0,4);if(v.length>=3)v=v.slice(0,2)+' / '+v.slice(2);el.value=v;}
+function closeCheckout(){const m=document.getElementById('checkoutModal');if(m)m.remove();}
+function payNow(){
+  const err=document.getElementById('ckErr');
+  const email=document.getElementById('ckEmail').value.trim();const card=document.getElementById('ckCard').value.replace(/\s/g,'');const exp=document.getElementById('ckExp').value.replace(/\D/g,'');const cvc=document.getElementById('ckCvc').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent='Enter a valid email.';return;}
+  if(card.length!==16){err.textContent='Card number must be 16 digits.';return;}
+  if(card!=='4242424242424242'){err.textContent='Card declined. In test mode, use 4242 4242 4242 4242.';return;}
+  if(exp.length!==4){err.textContent='Enter a valid expiry (MM / YY).';return;}
+  const mm=+exp.slice(0,2),yy=+exp.slice(2);
+  if(mm<1||mm>12){err.textContent='Invalid expiry month.';return;}
+  if(yy<26||(yy===26&&mm<6)){err.textContent='Card has expired.';return;}
+  if(cvc.length<3){err.textContent='Enter a valid CVC.';return;}
+  const btn=document.getElementById('ckPay');btn.disabled=true;btn.textContent='Processing…';
+  setTimeout(async function(){closeCheckout();state.coach.paid=true;try{await db.setPro(true);}catch(e){}if(currentScreen==='coach'){renderCoach();addCoachMsg("✅ Payment successful — you\u2019re on WaitWell Pro. Coaching is now unlimited, and reports + analytics are unlocked.",'ai');}else{alert('Payment successful — you are now on WaitWell Pro!');}},900);
+}
+
+// ===== NHS =====
+const NHS_LINKS={knee:[{ic:'NHS',bg:'#003087',t:'Knee replacement — NHS.uk',s:'Official pre-op and recovery guidance',url:'https://www.nhs.uk/tests-and-treatments/knee-replacement/'},{ic:'NICE',bg:'#00558c',t:'NICE — Osteoarthritis',s:'Evidence-based self-management',url:'https://www.nice.org.uk/guidance/ng226'},{ic:'VA',bg:'#c00',t:'Versus Arthritis — exercises',s:'Trusted UK charity, condition-specific',url:'https://versusarthritis.org/about-arthritis/exercising-with-arthritis/'}],back:[{ic:'NHS',bg:'#003087',t:'Back pain — NHS.uk',s:'Self-management and when to seek help',url:'https://www.nhs.uk/conditions/back-pain/'},{ic:'CSP',bg:'#00558c',t:'Chartered Society of Physiotherapy',s:'Back exercise guides',url:'https://www.csp.org.uk/public-patient'}],mental:[{ic:'NHS',bg:'#003087',t:'NHS talking therapies',s:'Self-referral and waiting support',url:'https://www.nhs.uk/tests-and-treatments/talking-therapies/'},{ic:'MIND',bg:'#0b6e4f',t:'Mind — mental health support',s:'Coping while you wait for therapy',url:'https://www.mind.org.uk/'},{ic:'116',bg:'#c00',t:'Samaritans — 116 123',s:'Free, 24/7, confidential · tap to call',url:'tel:116123'}],cardiac:[{ic:'NHS',bg:'#003087',t:'Heart conditions — NHS.uk',s:'Living with a heart condition',url:'https://www.nhs.uk/conditions/cardiovascular-disease/'},{ic:'BHF',bg:'#c00',t:'British Heart Foundation',s:'Support and information line',url:'https://www.bhf.org.uk/'}],gastro:[{ic:'NHS',bg:'#003087',t:'Preparing for surgery — NHS.uk',s:'How to prepare while you wait',url:'https://www.nhs.uk/nhs-services/hospitals/going-into-hospital/'}],other:[{ic:'NHS',bg:'#003087',t:'NHS.uk health A–Z',s:'Search trusted guidance for your condition',url:'https://www.nhs.uk/conditions/'},{ic:'111',bg:'#00558c',t:'NHS 111 online',s:'Advice when you are not sure what to do',url:'https://111.nhs.uk/'}]};
+function renderNhs(){
+  const el=document.getElementById('s-nhs');const links=NHS_LINKS[state.profile.condition];const cn=CONDITIONS.find(function(x){return x.id===state.profile.condition;}).name;
+  let linksHtml='';links.forEach(function(l){const isTel=l.url.indexOf('tel:')===0;linksHtml+='<a class="nhs-link" href="'+l.url+'"'+(isTel?'':' target="_blank" rel="noopener noreferrer"')+' style="text-decoration:none;color:inherit;display:flex;align-items:center"><div class="nhs-ico" style="background:'+l.bg+'">'+l.ic+'</div><div style="flex:1"><div class="nhs-text">'+l.t+'</div><div class="nhs-sub">'+l.s+'</div></div><div style="color:var(--text-hint);font-size:20px;padding:0 4px">›</div></a>';});
+  el.innerHTML='<div class="card" style="border-color:var(--green-mid)"><div class="card-title">Understand a letter</div><p style="font-size:13px;color:var(--text-sub);line-height:1.5;margin-bottom:10px">NHS letters can be full of jargon. Paste yours in and WaitWell will explain it in plain English — what it\u2019s about, key dates, and anything you need to do.</p><button class="btn" id="letterBtn">📄 Explain a letter</button></div><div class="section-label">Region</div><div class="region-row" id="rr"></div><div class="section-label">'+cn+' — trusted guidance</div><div id="nhsLinks">'+linksHtml+'</div><div class="disclaimer">WaitWell provides general wellbeing information only. It is not a substitute for medical advice. Always consult your GP or specialist for health decisions. If symptoms worsen significantly, contact NHS 111 or your care team.</div>';
+  document.getElementById('letterBtn').addEventListener('click',openLetterExplainer);
+  const rr=document.getElementById('rr');
+  ['England','Wales','Scotland','N. Ireland'].forEach(function(r){const e=document.createElement('div');e.className='tag'+(state.region===r?' active':'');e.textContent=r;e.addEventListener('click',function(){state.region=r;renderNhs();});rr.appendChild(e);});
+}
+
+// ===== LETTER EXPLAINER =====
+let letterFile=null;
+function openLetterExplainer(){
+  letterFile=null;
+  const m=document.createElement('div');m.className='modal-bg';m.id='letterModal';
+  m.addEventListener('click',function(e){if(e.target===m)closeLetterExplainer();});
+  m.innerHTML='<div class="modal"><div class="modal-body">'+
+    '<div class="card-title" style="margin-bottom:4px">Explain a letter</div>'+
+    '<p style="font-size:12px;color:var(--text-hint);line-height:1.5;margin-bottom:12px">Take a photo of your NHS letter, or upload a PDF or image. WaitWell will explain it in plain English. It won\u2019t interpret test results or give medical advice.</p>'+
+    '<input type="file" id="letterCam" accept="image/*" capture="environment" style="display:none">'+
+    '<input type="file" id="letterFileInput" accept="application/pdf,image/*" style="display:none">'+
+    '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+      '<button class="btn btn-outline" id="letterCamBtn" style="flex:1">📷 Take a photo</button>'+
+      '<button class="btn btn-outline" id="letterUpBtn" style="flex:1">📎 Upload PDF / image</button>'+
+    '</div>'+
+    '<div id="letterFileName" style="display:none;font-size:12px;color:var(--green-dark);background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:10px;word-break:break-all"></div>'+
+    '<div class="modal-err" id="letterErr" style="font-size:12px;color:var(--red);min-height:15px;margin-bottom:4px"></div>'+
+    '<div id="letterOut" style="display:none;background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--radius);padding:13px;font-size:13px;line-height:1.55;color:var(--text);margin-bottom:12px"></div>'+
+    '<button class="btn" id="letterRun" disabled style="opacity:0.5">📄 Explain this letter</button>'+
+    '<button class="modal-close" id="letterCancel">Close</button>'+
+    '<p style="font-size:10px;color:var(--text-hint);text-align:center;line-height:1.5;margin-top:8px">A plain-English summary only — not medical advice. For anything clinical, contact the number on your letter, your GP, or NHS 111.</p>'+
+    '</div></div>';
+  document.getElementById('phone').appendChild(m);
+  const cam=document.getElementById('letterCam');const fileIn=document.getElementById('letterFileInput');
+  document.getElementById('letterCamBtn').addEventListener('click',function(){cam.click();});
+  document.getElementById('letterUpBtn').addEventListener('click',function(){fileIn.click();});
+  cam.addEventListener('change',function(){onLetterFile(cam.files[0]);});
+  fileIn.addEventListener('change',function(){onLetterFile(fileIn.files[0]);});
+  document.getElementById('letterRun').addEventListener('click',runLetterExplain);
+  document.getElementById('letterCancel').addEventListener('click',closeLetterExplainer);
+}
+function onLetterFile(f){
+  const err=document.getElementById('letterErr');const name=document.getElementById('letterFileName');const run=document.getElementById('letterRun');
+  err.textContent='';
+  if(!f)return;
+  const okType=f.type.indexOf('image/')===0||f.type==='application/pdf';
+  if(!okType){err.textContent='Please choose a photo or a PDF.';return;}
+  if(f.size>10*1024*1024){err.textContent='That file is over 10MB. Try a photo or a smaller scan.';return;}
+  letterFile=f;
+  name.textContent='✓ '+f.name+' ('+Math.round(f.size/1024)+' KB)';name.style.display='block';
+  run.disabled=false;run.style.opacity='1';
+}
+function closeLetterExplainer(){const m=document.getElementById('letterModal');if(m)m.remove();letterFile=null;}
+function runLetterExplain(){
+  const err=document.getElementById('letterErr');const out=document.getElementById('letterOut');const btn=document.getElementById('letterRun');
+  err.textContent='';
+  if(!letterFile){err.textContent='Add a photo or PDF first.';return;}
+  btn.disabled=true;btn.style.opacity='0.6';btn.textContent='Reading your letter…';out.style.display='none';
+  const reader=new FileReader();
+  reader.onload=function(){
+    const base64=String(reader.result).split(',')[1]||'';
+    sb.functions.invoke('explain-letter',{ body:{ fileData:base64, mimeType:letterFile.type } })
+      .then(function(res){
+        const data=res.data||{};
+        if(data.error){err.textContent='Sorry, I couldn\u2019t read that one. Try a clearer photo or a PDF.';return;}
+        const ex=data.explanation||'Sorry, I couldn\u2019t read that one. Try a clearer photo.';
+        out.innerHTML=formatReply(ex);out.style.display='block';
+      })
+      .catch(function(e){err.textContent='I\u2019m having trouble connecting right now. Please try again.';console.error(e);})
+      .then(function(){btn.disabled=false;btn.style.opacity='1';btn.textContent='📄 Explain this letter';});
+  };
+  reader.onerror=function(){err.textContent='Couldn\u2019t read that file. Please try another.';btn.disabled=false;btn.style.opacity='1';btn.textContent='📄 Explain this letter';};
+  reader.readAsDataURL(letterFile);
+}
+
+// ===== MANAGE ACCOUNT =====
+function openManage(){renderManage();document.getElementById('manage').classList.add('open');}
+function closeManage(){document.getElementById('manage').classList.remove('open');}
+function renderManage(){
+  const p=state.profile;const c=p?CONDITIONS.find(function(x){return x.id===p.condition;}):null;
+  const body=document.getElementById('manageBody');
+  let subBlock;
+  if(state.coach.paid)subBlock='<div class="m-row"><span class="mk">Status</span><span class="mv" style="color:var(--green-dark)">Active · Pro</span></div><button class="btn-ghost m-danger" id="mCancel" style="width:100%;text-align:left;padding-left:0">Cancel subscription</button>';
+  else subBlock='<p style="font-size:13px;color:var(--text-sub);margin-bottom:10px">Unlock unlimited coaching, PDF reports and pattern analytics.</p><button class="btn" id="mUpgrade">Upgrade to Pro</button>';
+  body.innerHTML='<div class="card"><div class="card-title">Profile</div>'+
+    '<div class="m-row"><span class="mk">Name</span><span class="mv">'+(p?escHtml(p.name):'\u2014')+'</span></div>'+
+    '<div class="m-row"><span class="mk">Email</span><span class="mv">'+escHtml(currentEmail||'\u2014')+'</span></div>'+
+    '<div class="m-row"><span class="mk">Condition</span><span class="mv">'+(c?c.icon+' '+c.name:'\u2014')+'</span></div>'+
+    '<div class="m-row"><span class="mk">Plan</span><span class="mv">'+(state.coach.paid?'WaitWell Pro':'Free')+'</span></div>'+
+    '<button class="btn btn-outline" id="mEditName" style="margin-top:12px">Edit name</button></div>'+
+    '<div class="card"><div class="card-title">Appearance</div><div class="m-row"><span class="mk">Dark mode</span><div class="switch '+(state.theme==='dark'?'on':'')+'" id="mTheme"></div></div></div>'+
+    '<div class="card"><div class="card-title">Reminders</div>'+
+      '<div class="m-row"><span class="mk">Daily reminders</span><div class="switch '+(state.profile.notifyEnabled?'on':'')+'" id="mNotify"></div></div>'+
+      '<div class="m-row"><span class="mk">Reminder time</span><input type="time" id="mNotifyTime" value="'+(state.profile.notifyTime||'09:00')+'" style="border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;background:var(--card);color:var(--text);font-size:13px"></div>'+
+      '<div class="m-row"><span class="mk">Notification sound</span><div class="switch '+(notifSoundOn?'on':'')+'" id="mSound"></div></div>'+
+      '<button class="btn btn-outline" id="mTestNotif" style="margin-top:10px">Send a test reminder now</button>'+
+      '<p style="font-size:11px;color:var(--text-hint);line-height:1.5;margin-top:8px">Reminders nudge you to log symptoms and prep for appointments. They fire while the app is open; full background reminders come in a later update.</p>'+
+    '</div>'+
+    '<div class="card"><div class="card-title">Subscription</div>'+subBlock+'</div>'+
+    '<div class="card"><div class="card-title">Security</div><button class="btn btn-outline" id="mPass">Change password</button></div>'+
+    '<div class="card"><div class="card-title">Account</div><button class="btn-ghost" id="mSignout" style="width:100%;text-align:left;padding-left:0">↪ Sign out</button><button class="btn-ghost m-danger" id="mDelete" style="width:100%;text-align:left;padding-left:0">🗑 Delete my data</button></div>'+
+    '<p style="font-size:11px;color:var(--text-hint);text-align:center;line-height:1.5">WaitWell · a Damon Dynamics app</p>';
+  document.getElementById('mEditName').addEventListener('click',editName);
+  document.getElementById('mTheme').addEventListener('click',toggleTheme);
+  const mNotify=document.getElementById('mNotify');
+  if(mNotify)mNotify.addEventListener('click',toggleNotify);
+  const mTime=document.getElementById('mNotifyTime');
+  if(mTime)mTime.addEventListener('change',async function(){state.profile.notifyTime=mTime.value;try{await db.saveNotifyPrefs(state.profile.notifyEnabled,mTime.value);}catch(e){}});
+  const mSound=document.getElementById('mSound');
+  if(mSound)mSound.addEventListener('click',function(){notifSoundOn=!notifSoundOn;if(notifSoundOn)playNotifSound();renderManage();});
+  const mTest=document.getElementById('mTestNotif');
+  if(mTest)mTest.addEventListener('click',async function(){
+    if("Notification" in window && Notification.permission!=="granted"){await Notification.requestPermission();}
+    lastReminderDate=null;
+    fireNotification("WaitWell test", reminderBody());
+  });
+  document.getElementById('mPass').addEventListener('click',changePassword);
+  document.getElementById('mSignout').addEventListener('click',signOut);
+  document.getElementById('mDelete').addEventListener('click',deleteAccount);
+  const up=document.getElementById('mUpgrade');if(up)up.addEventListener('click',function(){closeManage();nav('coach');openCheckout();});
+  const cn=document.getElementById('mCancel');if(cn)cn.addEventListener('click',cancelPro);
+}
+async function editName(){const v=prompt('Your name:',state.profile.name);if(v&&v.trim()){state.profile.name=v.trim();try{await db.saveName(state.profile.name);}catch(e){}renderManage();}}
+async function changePassword(){const v=prompt('New password (min 6 characters):');if(v===null)return;if(v.length<6){alert('Password must be at least 6 characters.');return;}const{error}=await sb.auth.updateUser({password:v});alert(error?('Could not update: '+error.message):'Password updated.');}
+async function cancelPro(){if(!confirm('Cancel WaitWell Pro? You will return to the free tier.'))return;state.coach.paid=false;try{await db.setPro(false);}catch(e){}renderManage();}
+
+// ===== NOTIFICATIONS =====
+let notifSoundOn=true;
+let lastReminderDate=null;
+let reminderTimer=null;
+
+async function toggleNotify(){
+  if(!state.profile.notifyEnabled){
+    // turning on — request permission
+    if("Notification" in window){
+      let perm=Notification.permission;
+      if(perm!=="granted")perm=await Notification.requestPermission();
+      if(perm!=="granted"){alert("Notifications are blocked. Enable them for WaitWell in your phone/browser settings, then try again.");renderManage();return;}
+    }
+    state.profile.notifyEnabled=true;
+    startReminderLoop();
+    fireNotification("Reminders on","We\u2019ll gently nudge you to log symptoms and prep for appointments.");
+  }else{
+    state.profile.notifyEnabled=false;
+    if(reminderTimer){clearInterval(reminderTimer);reminderTimer=null;}
+  }
+  try{await db.saveNotifyPrefs(state.profile.notifyEnabled,state.profile.notifyTime||'09:00');}catch(e){}
+  renderManage();
+}
+
+function playNotifSound(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator();const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sine';o.frequency.setValueAtTime(880,ctx.currentTime);
+    o.frequency.setValueAtTime(1175,ctx.currentTime+0.12);
+    g.gain.setValueAtTime(0.0001,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.3,ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.4);
+    o.start();o.stop(ctx.currentTime+0.4);
+  }catch(e){}
+}
+
+function fireNotification(title,body){
+  if(notifSoundOn)playNotifSound();
+  if("Notification" in window && Notification.permission==="granted"){
+    try{
+      if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+        navigator.serviceWorker.ready.then(function(reg){reg.showNotification(title,{body:body,icon:'icon-192.png',badge:'icon-192.png',tag:'waitwell'});});
+      }else{
+        new Notification(title,{body:body,icon:'icon-192.png'});
+      }
+    }catch(e){console.log('notif failed',e);}
+  }
+}
+
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function reminderBody(){
+  const lg=latestLog();
+  const todayLogged = lg && new Date(lg.date).toISOString().slice(0,10)===todayKey();
+  const d=daysUntilAppt();
+  if(d!==null&&d>=0&&d<=2){
+    return d===0?"Your appointment is today — your prep checklist is ready.":d===1?"Your appointment is tomorrow. Review your questions to ask.":"Your appointment is in 2 days. Time to finalise your prep.";
+  }
+  if(!todayLogged)return "How are you feeling today? Take a moment to log your symptoms.";
+  return "Here\u2019s your small step for today — open WaitWell to see it.";
+}
+
+function checkDailyReminder(){
+  if(!state.profile||!state.profile.notifyEnabled)return;
+  const now=new Date();
+  const [hh,mm]=(state.profile.notifyTime||'09:00').split(':').map(Number);
+  const due = now.getHours()>hh || (now.getHours()===hh && now.getMinutes()>=mm);
+  if(due && lastReminderDate!==todayKey()){
+    lastReminderDate=todayKey();
+    fireNotification("WaitWell",reminderBody());
+  }
+}
+
+function startReminderLoop(){
+  if(reminderTimer)clearInterval(reminderTimer);
+  checkDailyReminder();
+  reminderTimer=setInterval(checkDailyReminder,60000); // check every minute while open
+}
+// also re-check whenever the app regains focus / is reopened
+document.addEventListener('visibilitychange',function(){if(!document.hidden)checkDailyReminder();});
+window.addEventListener('focus',function(){checkDailyReminder();});
+
+// ===== LOGO + INIT =====
+const LOGO_SVG='<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 41C24 41 9 32 9 21.5C9 16.5 13 12.5 18 12.5C21 12.5 23.2 14.2 24 15.2C24.8 14.2 27 12.5 30 12.5C35 12.5 39 16.5 39 21.5C39 32 24 41 24 41Z" fill="#ffffff"/><path d="M13.5 24.5h4l2.5-6 3.5 10 2.5-4.5H32.5" stroke="#0c5440" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const LOGO_SVG_GREEN='<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 41C24 41 9 32 9 21.5C9 16.5 13 12.5 18 12.5C21 12.5 23.2 14.2 24 15.2C24.8 14.2 27 12.5 30 12.5C35 12.5 39 16.5 39 21.5C39 32 24 41 24 41Z" fill="#1a6b4a"/><path d="M13.5 24.5h4l2.5-6 3.5 10 2.5-4.5H32.5" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function injectLogo(el,size,green){if(!el)return;el.innerHTML=green?LOGO_SVG_GREEN:LOGO_SVG;const s=el.querySelector('svg');if(s){s.style.width=size+'px';s.style.height=size+'px';s.style.display='block';}}
+function init(){
+  injectLogo(document.getElementById('splashLogo'),22,true);
+  injectLogo(document.getElementById('authLogo'),22,false);
+  injectLogo(document.getElementById('obLogo'),18,false);
+  planDay=todayIdx();
+  document.getElementById('splash').addEventListener('click',endSplash);
+  document.getElementById('tabLogin').addEventListener('click',function(){authMode('login');});
+  document.getElementById('tabSignup').addEventListener('click',function(){authMode('signup');});
+  document.getElementById('manageBack').addEventListener('click',closeManage);
+  document.querySelectorAll('.nav-item').forEach(function(it){it.addEventListener('click',function(){nav(it.getAttribute('data-s'));});});
+  applyTheme('light');authMode('login');
+  setTimeout(endSplash,2800);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+</script>
+</body>
+</html>

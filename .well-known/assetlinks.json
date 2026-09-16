@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "uk.co.waitwell.twa",
+        "sha256_cert_fingerprints": ["FF:0B:8A:0D:C5:66:EE:3E:6A:B1:C7:0C:5E:BF:B5:1B:2E:2C:C8:18:1D:12:1F:B6:4A:75:40:D9:0F:E9:23:34"]
+      }
+    }]
