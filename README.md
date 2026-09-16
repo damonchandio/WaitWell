@@ -38,7 +38,7 @@ A companion app for people stuck on an NHS waiting list. It turns a long, silent
 ## Running it locally
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/waitwell.git
+git clone https://github.com/damonchandio/waitwell.git
 cd waitwell
 npm install
 cp .env.example .env    # then fill in your own keys
