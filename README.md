@@ -1,5 +1,7 @@
 # WaitWell
 
+> **Note:** the hosted demo's AI features are offline at the moment (its free backend is paused). Everything runs locally: see *Running it locally*.
+
 A companion app for people stuck on an NHS waiting list. It turns a long, silent wait into something you can track and prepare for, instead of something that just happens to you.
 
 **Live app: [waitwell.netlify.app](https://waitwell.netlify.app)**
